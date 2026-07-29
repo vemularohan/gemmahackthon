@@ -18,7 +18,7 @@ export interface ChatMessage {
 
 async function fetchFromOpenRouter(messages: ChatMessage[], modelOverride?: string) {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  const model = modelOverride || process.env.OPENROUTER_MODEL || "google/gemma-3-27b-it";
+  const model = modelOverride || process.env.OPENROUTER_MODEL || "google/gemma-4-26b-a4b-it:free";
 
   if (!apiKey) {
     console.warn("OPENROUTER_API_KEY is not defined. Returning a mocked Telugu response.");

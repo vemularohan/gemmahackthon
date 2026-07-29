@@ -572,7 +572,7 @@ export default function ChatInterface({
 
         {/* Extra Utility Actions */}
         <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-medium px-1">
-          <span>Google Gemma 3 via OpenRouter</span>
+          <span>Google Gemma 4 via OpenRouter</span>
           {messages.length > 0 && (
             <button
               onClick={handleRegenerate}

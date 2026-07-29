@@ -153,7 +153,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-base font-black tracking-tight text-white flex items-center gap-1.5">
-                సారథి AI <span className="text-[10px] py-0.5 px-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-extrabold">Gemma 3</span>
+                సారథి AI <span className="text-[10px] py-0.5 px-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-extrabold">Gemma 4</span>
               </h1>
               <p className="text-[9px] text-slate-500 font-medium -mt-0.5">తెలుగు డిజిటల్ అసిస్టెంట్</p>
             </div>

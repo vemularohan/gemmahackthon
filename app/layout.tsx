@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "సారథి AI (Saarathi AI) - Voice-First Telugu Assistant",
-  description: "A production-ready digital assistant designed for Telugu-speaking communities. Access agricultural help, healthcare guidance, government schemes, and translation services with voice.",
+  title: "సారథి AI (Saarathi AI) - Voice-First Telugu Assistant Powered by Google Gemma 4",
+  description: "A production-ready digital assistant designed for Telugu-speaking communities. Access agricultural help, healthcare guidance, government schemes, and translation services with voice, powered by Google Gemma 4.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

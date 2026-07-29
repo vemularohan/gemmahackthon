@@ -200,6 +200,7 @@ export default function Home() {
                 onNewChat={handleNewChat}
                 onLaunchVoiceMode={() => setIsVoiceOpen(true)}
                 currentChatId={activeChatId}
+                sidebarOnly={true}
               />
             </div>
             <div className="lg:col-span-8 min-h-[500px] flex flex-col">

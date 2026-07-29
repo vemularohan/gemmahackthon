@@ -26,6 +26,7 @@ interface DashboardProps {
   onNewChat: () => void;
   onLaunchVoiceMode: () => void;
   currentChatId: string | null;
+  sidebarOnly?: boolean;
 }
 
 export default function Dashboard({
@@ -34,6 +35,7 @@ export default function Dashboard({
   onNewChat,
   onLaunchVoiceMode,
   currentChatId,
+  sidebarOnly = false,
 }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<"dashboard" | "farmer" | "health" | "government" | "translator" | "bookmarks" | "settings">("dashboard");
   const [user, setUser] = useState<any | null>(null);
@@ -138,6 +140,85 @@ export default function Dashboard({
     { text: "ఈ పంటకు ఏ ఎరువు వేయాలి?", cat: "farmer" },
     { text: "Meeting ki late avthanu", cat: "translator" },
   ];
+
+  if (sidebarOnly) {
+    return (
+      <div className="flex flex-col gap-4 h-full">
+        {/* User Card */}
+        <div className="glass-panel p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md flex items-center justify-between">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="w-10 h-10 rounded-full bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold uppercase">
+              {user ? user.displayName?.substring(0, 2) || "UR" : "G"}
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-200">
+                {user ? user.displayName || "Saarathi User" : "అతిథి (Guest)"}
+              </h4>
+              <p className="text-[10px] text-slate-500">{user ? user.email : "పరిమిత అధికారాలు"}</p>
+            </div>
+          </div>
+          {user && (
+            <button
+              onClick={() => authService.logout()}
+              className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Recent Chats List */}
+        <div className="glass-panel flex-grow p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md flex flex-col min-h-[300px]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+              ఇటీవలి సంభాషణలు (Chats)
+            </h3>
+            <button
+              onClick={onNewChat}
+              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="New Chat"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="flex-grow space-y-2 overflow-y-auto max-h-[400px] pr-1">
+            {recentChats.length === 0 ? (
+              <p className="text-xs text-slate-600 text-center py-8">ఇंకా చాట్స్ లేవు</p>
+            ) : (
+              recentChats.map((chat) => (
+                <button
+                  key={chat.id}
+                  onClick={() => onSelectChat(chat.id)}
+                  className={`w-full text-left p-2.5 rounded-xl border text-xs flex items-center justify-between group transition-all cursor-pointer ${
+                    currentChatId === chat.id
+                      ? "bg-blue-600/10 border-blue-500/30 text-blue-400 font-bold"
+                      : "bg-slate-950/20 border-slate-900 text-slate-400 hover:bg-slate-900 hover:text-slate-200"
+                  }`}
+                >
+                  <span className="truncate pr-2">{chat.title || "తెలుగు సంభాషణ"}</span>
+                  <span className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-red-400 rounded transition-opacity cursor-pointer">
+                    <Trash2 className="w-3.5 h-3.5" onClick={(e) => handleDeleteChat(e, chat.id)} />
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Quick Back to Dashboard Button */}
+        <button
+          onClick={onNewChat}
+          className="w-full py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          హోమ్ స్క్రీన్ (Home Dashboard)
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

@@ -60,7 +60,7 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
         };
 
         recObj.onerror = (event: any) => {
-          console.error("Speech Recognition Error:", event.error);
+          console.warn("Speech Recognition Error:", event.error);
           setIsListening(false);
         };
 
@@ -102,7 +102,7 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
     try {
       recognitionRef.current.start();
     } catch (e) {
-      console.error("Failed to start speech recognition:", e);
+      console.warn("Failed to start speech recognition:", e);
     }
   };
 
@@ -155,7 +155,7 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
     };
 
     utterance.onerror = (e) => {
-      console.error("Speech Synthesis Error:", e);
+      console.warn("Speech Synthesis Error:", e);
       setIsSpeaking(false);
       if (onEndCallback) onEndCallback();
     };

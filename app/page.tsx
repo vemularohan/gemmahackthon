@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Sparkles, Mic, LogIn, Menu, X, ArrowLeft } from "lucide-react";
+import { Sparkles, Mic, LogIn, Menu, X, ArrowLeft, Globe } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/components/Dashboard";
 import ChatInterface from "@/components/ChatInterface";
@@ -19,7 +19,7 @@ interface Message {
 }
 
 export default function Home() {
-  const { settings } = useAccessibility();
+  const { settings, updateSetting } = useAccessibility();
   const lang = settings.language || "te";
   const [user, setUser] = useState<any | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -254,6 +254,19 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Language Selector Toggle */}
+            <button
+              onClick={() => {
+                const nextLang = lang === "te" ? "en" : "te";
+                updateSetting("language", nextLang);
+              }}
+              className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-850 text-slate-200 text-xs font-bold flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
+              title={lang === "te" ? "Switch to English" : "తెలుగులోకి మార్చండి"}
+            >
+              <Globe className="w-4 h-4 text-sky-400" />
+              <span>{lang === "te" ? "English" : "తెలుగు"}</span>
+            </button>
+
             {/* Quick Action Voice launcher */}
             <button
               onClick={() => setIsVoiceOpen(true)}

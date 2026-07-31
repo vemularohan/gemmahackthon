@@ -2,13 +2,19 @@
 
 import React from "react";
 import { useAccessibility, FontSize } from "@/context/AccessibilityContext";
-import { Eye, Type, Volume2, VolumeX, RefreshCw } from "lucide-react";
+import { Eye, Type, Volume2, VolumeX, RefreshCw, Globe } from "lucide-react";
+import { t } from "@/utils/translations";
 
 export default function AccessibilitySettingsComponent() {
   const { settings, updateSetting, resetSettings } = useAccessibility();
+  const lang = settings.language || "te";
 
   const handleFontSizeChange = (size: FontSize) => {
     updateSetting("fontSize", size);
+  };
+
+  const handleLanguageChange = (language: "te" | "en") => {
+    updateSetting("language", language);
   };
 
   return (
@@ -16,7 +22,7 @@ export default function AccessibilitySettingsComponent() {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2">
           <Eye className="w-5 h-5 text-sky-400" />
-          అనుకూలత సెట్టింగులు (Accessibility Settings)
+          {t("accessibilitySettings", lang)}
         </h3>
         <button
           onClick={resetSettings}
@@ -24,25 +30,54 @@ export default function AccessibilitySettingsComponent() {
           aria-label="Reset accessibility settings to default"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          రీసెట్ (Reset)
+          {t("reset", lang)}
         </button>
       </div>
 
       <div className="space-y-6">
+        {/* Language Selector */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-sky-400" />
+            {t("selectLanguage", lang)}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {(["te", "en"] as const).map((language) => {
+              const label = language === "te" ? t("telugu", lang) : t("english", lang);
+              const isActive = lang === language;
+
+              return (
+                <button
+                  key={language}
+                  onClick={() => handleLanguageChange(language)}
+                  className={`py-3 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-500/20"
+                      : "bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700"
+                  }`}
+                  aria-pressed={isActive}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Font Size Selector */}
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
             <Type className="w-4 h-4 text-sky-400" />
-            అక్షరాల పరిమాణం (Text Size)
+            {t("textSize", lang)}
           </label>
           <div className="grid grid-cols-3 gap-2">
             {(["normal", "large", "xlarge"] as FontSize[]).map((size) => {
               const label =
                 size === "normal"
-                  ? "సాధారణ (Normal)"
+                  ? t("textSizeNormal", lang)
                   : size === "large"
-                  ? "పెద్దది (Large)"
-                  : "చాలా పెద్దది (Extra Large)";
+                  ? t("textSizeLarge", lang)
+                  : t("textSizeXlarge", lang);
 
               const isActive = settings.fontSize === size;
 
@@ -67,8 +102,8 @@ export default function AccessibilitySettingsComponent() {
         {/* High Contrast Toggle */}
         <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-700/30">
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-slate-200">హై కాంట్రాస్ట్ (High Contrast)</span>
-            <span className="text-xs text-slate-400">చూపు మెరుగుపరచడానికి నలుపు-తెలుపు రంగులు</span>
+            <span className="text-sm font-medium text-slate-200">{t("highContrast", lang)}</span>
+            <span className="text-xs text-slate-400">{t("highContrastDesc", lang)}</span>
           </div>
           <button
             onClick={() => updateSetting("highContrast", !settings.highContrast)}
@@ -90,8 +125,8 @@ export default function AccessibilitySettingsComponent() {
         {/* Auto Speak Toggle */}
         <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-700/30">
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-slate-200">స్వయంచాలక వాయిస్ (Auto Voice Output)</span>
-            <span className="text-xs text-slate-400">ప్రతి సమాధానాన్ని బిగ్గరగా చదవడానికి</span>
+            <span className="text-sm font-medium text-slate-200">{t("autoVoice", lang)}</span>
+            <span className="text-xs text-slate-400">{t("autoVoiceDesc", lang)}</span>
           </div>
           <button
             onClick={() => updateSetting("autoSpeak", !settings.autoSpeak)}
@@ -119,8 +154,8 @@ export default function AccessibilitySettingsComponent() {
           )}
           <span>
             {settings.autoSpeak
-              ? "వాయిస్ సక్రియం చేయబడింది. సహాయకుడు మీ ప్రశ్నలకు తెలుగులో సమాధానాలు చదువుతారు."
-              : "వాయిస్ నిలిపివేయబడింది. మీరు టెక్స్ట్ రూపంలో మాత్రమే సమాధానాలు చూస్తారు."}
+              ? t("voiceActive", lang)
+              : t("voiceInactive", lang)}
           </span>
         </div>
       </div>

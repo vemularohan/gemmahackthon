@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { announceToScreenReader } from "@/utils/accessibility";
 import { useAccessibility } from "@/context/AccessibilityContext";
+import { t } from "@/utils/translations";
 
 interface Message {
   id: string;
@@ -144,6 +145,7 @@ export default function ChatInterface({
   onLaunchVoiceMode,
 }: ChatInterfaceProps) {
   const { settings } = useAccessibility();
+  const lang = settings.language || "te";
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputValue, setInputValue] = useState("");
   const [imageFile, setImageFile] = useState<string | null>(null);
@@ -202,7 +204,8 @@ export default function ChatInterface({
     setImageFile(null);
     setImageMimeType(null);
     setLoading(true);
-    announceToScreenReader("సందేశం పంపబడింది. ప్రతిస్పందన కోసం వేచి ఉంది.");
+    const lang = settings.language || "te";
+    announceToScreenReader(t("srMessageSent", lang));
 
     try {
       let responseText = "";
@@ -217,6 +220,7 @@ export default function ChatInterface({
             imageBase64: base64Clean,
             mimeType: userImageMime,
             prompt: userMessageText || undefined,
+            language: lang,
           }),
         });
         const data = await res.json();
@@ -235,6 +239,7 @@ export default function ChatInterface({
           body: JSON.stringify({
             action: "chat",
             messages: chatHistory,
+            language: lang,
           }),
         });
         const data = await res.json();
@@ -250,11 +255,11 @@ export default function ChatInterface({
       const finalMessages = [...updatedMessages, assistantMsg];
       setMessages(finalMessages);
       onSaveChat(finalMessages);
-      announceToScreenReader("సహాయకుడి నుండి సమాధానం వచ్చింది.");
+      announceToScreenReader(t("srResponseReceived", lang));
 
       // Auto speak response if turned on
       if (settings.autoSpeak) {
-        speak(responseText);
+        speak(responseText, lang);
         setActiveSpeechId(assistantMsg.id);
       }
     } catch (err: any) {
@@ -262,7 +267,9 @@ export default function ChatInterface({
       const errorMsg: Message = {
         id: Math.random().toString(36).substring(7),
         role: "assistant",
-        content: "క్షమించండి, సర్వర్ లోపం కారణంగా సమాధానం ఇవ్వలేకపోయాను. దయచేసి మీ OpenRouter API Key సరిచూసుకోండి.",
+        content: lang === "te"
+          ? "క్షమించండి, సర్వర్ లోపం కారణంగా సమాధానం ఇవ్వలేకపోయాను. దయచేసి మీ OpenRouter API Key సరిచూసుకోండి."
+          : "Sorry, I could not respond due to a server error. Please check your OpenRouter API Key.",
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -295,12 +302,14 @@ export default function ChatInterface({
         content: m.content,
       }));
 
+      const lang = settings.language || "te";
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "chat",
           messages: chatHistory,
+          language: lang,
         }),
       });
 
@@ -318,7 +327,7 @@ export default function ChatInterface({
       onSaveChat(finalMessages);
 
       if (settings.autoSpeak) {
-        speak(responseText);
+        speak(responseText, lang);
         setActiveSpeechId(assistantMsg.id);
       }
     } catch (error: any) {
@@ -368,7 +377,7 @@ export default function ChatInterface({
       stopSpeaking();
       setActiveSpeechId(null);
     } else {
-      speak(text, () => setActiveSpeechId(null));
+      speak(text, lang, () => setActiveSpeechId(null));
       setActiveSpeechId(id);
     }
   };
@@ -486,12 +495,14 @@ export default function ChatInterface({
 
       {/* Uploaded File Preview Banner */}
       {imageFile && (
-        <div className="mx-4 mb-2 p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+        <div className="mx-4 mb-2 p-2 rounded-xl bg-slate-900 border border-slate-880 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-800">
               <img src={imageFile} alt="Preview" className="w-full h-full object-cover" />
             </div>
-            <span className="text-xs text-slate-400">చిత్రం జతచేయబడింది (Image attached)</span>
+            <span className="text-xs text-slate-400">
+              {settings.language === "en" ? "Image attached" : "చిత్రం జతచేయబడింది"}
+            </span>
           </div>
           <button
             onClick={() => {
@@ -527,7 +538,7 @@ export default function ChatInterface({
 
           {/* Inline Speech Recognition */}
           <button
-            onClick={isListening ? stopListening : startListening}
+            onClick={isListening ? stopListening : () => startListening(lang)}
             className={`p-3 border rounded-xl transition-all cursor-pointer ${
               isListening
                 ? "bg-red-900/50 border-red-800 text-red-400 animate-pulse"
@@ -546,7 +557,9 @@ export default function ChatInterface({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={isListening ? "వింటున్నాను..." : "ఇక్కడ మీ సందేశాన్ని టైప్ చేయండి..."}
+              placeholder={isListening 
+                ? (settings.language === "en" ? "Listening..." : "వింటున్నాను...") 
+                : t("chatPlaceholder", settings.language || "te")}
               className="w-full py-3.5 pl-4 pr-12 rounded-xl bg-slate-950/60 border border-slate-850 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500 text-sm transition-colors"
             />
             {inputValue && (
@@ -566,7 +579,7 @@ export default function ChatInterface({
             className="hidden sm:flex items-center gap-1.5 py-3.5 px-4 bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer shrink-0"
           >
             <Mic className="w-4 h-4" />
-            వాయిస్ మోడ్
+            {t("voiceAssistant", settings.language || "te")}
           </button>
         </div>
 
@@ -579,7 +592,7 @@ export default function ChatInterface({
               className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3 h-3" />
-              మళ్ళీ సమాధానం ఇవ్వండి (Regenerate)
+              {t("regenerate", settings.language || "te")}
             </button>
           )}
         </div>

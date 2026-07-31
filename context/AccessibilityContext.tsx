@@ -10,6 +10,7 @@ export interface AccessibilitySettings {
   highContrast: boolean;
   voiceNav: boolean;
   autoSpeak: boolean;
+  language: "te" | "en";
 }
 
 interface AccessibilityContextProps {
@@ -23,6 +24,7 @@ const defaultSettings: AccessibilitySettings = {
   highContrast: false,
   voiceNav: false,
   autoSpeak: true,
+  language: "te",
 };
 
 const AccessibilityContext = createContext<AccessibilityContextProps | undefined>(undefined);

@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { authService, dbService } from "@/lib/firebase";
 import AccessibilitySettings from "./AccessibilitySettings";
+import { useAccessibility } from "@/context/AccessibilityContext";
+import { t } from "@/utils/translations";
 
 interface DashboardProps {
   onSelectQuery: (query: string, category: string) => void;
@@ -31,6 +33,8 @@ export default function Dashboard({
   const [activeTab, setActiveTab] = useState<"dashboard" | "farmer" | "health" | "government" | "translator" | "bookmarks" | "settings">("dashboard");
   const [user, setUser] = useState<any | null>(null);
   const [bookmarks, setBookmarks] = useState<any[]>([]);
+  const { settings } = useAccessibility();
+  const lang = settings.language || "te";
 
   // Form states
   const [farmerQuery, setFarmerQuery] = useState("");
@@ -73,7 +77,7 @@ export default function Dashboard({
       setTransResult(data.result);
     } catch (e) {
       console.error(e);
-      setTransResult("అనువాదంలో లోపం ఏర్పడింది. దయచేసి మళ్ళీ ప్రయత్నించండి.");
+      setTransResult(lang === "te" ? "అనువాదంలో లోపం ఏర్పడింది. దయచేసి మళ్ళీ ప్రయత్నించండి." : "Translation error occurred. Please try again.");
     } finally {
       setTransLoading(false);
     }
@@ -90,13 +94,20 @@ export default function Dashboard({
     }
   };
 
-  const demoQueries = [
+  const demoQueries = lang === "te" ? [
     { text: "నాకు రైతు బంధు పథకం గురించి చెప్పు", cat: "farmer" },
     { text: "ఈ మందు ఎలా వాడాలి?", cat: "health" },
     { text: "నా బిడ్డకు జ్వరం ఉంది", cat: "health" },
     { text: "Aadhaar update ఎలా చేయాలి?", cat: "government" },
     { text: "ఈ పంటకు ఏ ఎరువు వేయాలి?", cat: "farmer" },
     { text: "Meeting ki late avthanu", cat: "translator" },
+  ] : [
+    { text: "Tell me about Rythu Bandhu scheme", cat: "farmer" },
+    { text: "How should I use this medicine?", cat: "health" },
+    { text: "My child has a fever", cat: "health" },
+    { text: "How to update Aadhaar?", cat: "government" },
+    { text: "Which fertilizer is good for this crop?", cat: "farmer" },
+    { text: "I'll be late to the meeting", cat: "translator" },
   ];
 
   return (
@@ -105,13 +116,13 @@ export default function Dashboard({
       <nav className="grid grid-cols-4 sm:grid-cols-7 gap-2 p-1.5 bg-slate-950/40 rounded-2xl border border-slate-900 shadow-inner">
         {(
           [
-            { id: "dashboard", label: "డ్యాష్‌బోర్డ్", icon: Landmark },
-            { id: "farmer", label: "రైతు బజార్", icon: Wheat },
-            { id: "health", label: "ఆరోగ్యం", icon: HeartPulse },
-            { id: "government", label: "సేవలు", icon: Landmark },
-            { id: "translator", label: "భాషాంతరం", icon: Languages },
-            { id: "bookmarks", label: "బుక్‌మార్క్స్", icon: Bookmark },
-            { id: "settings", label: "సెట్టింగ్స్", icon: SettingsIcon },
+            { id: "dashboard", label: t("dashboard", lang), icon: Landmark },
+            { id: "farmer", label: t("farmerBazar", lang), icon: Wheat },
+            { id: "health", label: t("health", lang), icon: HeartPulse },
+            { id: "government", label: t("services", lang), icon: Landmark },
+            { id: "translator", label: t("translator", lang), icon: Languages },
+            { id: "bookmarks", label: t("bookmarks", lang), icon: Bookmark },
+            { id: "settings", label: t("settings", lang), icon: SettingsIcon },
           ] as const
         ).map((tab) => {
           const Icon = tab.icon;
@@ -145,13 +156,13 @@ export default function Dashboard({
             <div className="relative overflow-hidden p-8 rounded-3xl bg-gradient-to-r from-blue-600/90 to-sky-600/90 border border-blue-500/20 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="space-y-3 text-center md:text-left max-w-lg">
                 <span className="px-3 py-1 text-[10px] font-black uppercase tracking-wider bg-sky-500/20 border border-sky-400/25 text-sky-200 rounded-full">
-                  సారథి డిజిటల్ తోడు
+                  {lang === "te" ? "సారథి డిజిటల్ తోడు" : "Saarathi Digital Companion"}
                 </span>
                 <h2 className="text-3xl font-black text-white tracking-tight leading-tight">
-                  సారథి AI - తెలుగు వాయిస్ అసిస్టెంట్
+                  {t("heroTitle", lang)}
                 </h2>
                 <p className="text-sm text-blue-100 leading-relaxed font-medium">
-                  వ్యవసాయం, ఆరోగ్యం, ప్రభుత్వ సేవల దరఖాస్తులు మరియు భాషాంతర సేవలను మీ సొంత భాషలో సులభంగా పొందండి.
+                  {t("heroDesc", lang)}
                 </p>
               </div>
               <button
@@ -159,7 +170,7 @@ export default function Dashboard({
                 className="flex items-center gap-2.5 py-4.5 px-7 bg-white hover:bg-slate-100 text-blue-600 text-sm font-extrabold rounded-2xl shadow-xl transition-all hover:scale-105 hover:shadow-white/10 active:scale-95 cursor-pointer shrink-0"
               >
                 <Mic className="w-5 h-5 text-blue-600 animate-bounce" />
-                మాట్లాడటం ప్రారంభించండి
+                {t("voiceAssistant", lang)}
               </button>
             </div>
 
@@ -167,7 +178,7 @@ export default function Dashboard({
             <div>
               <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-4 pl-1 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-blue-400" />
-                తరచుగా అడిగే ప్రశ్నలు (Quick Questions)
+                {t("quickQueries", lang)}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {demoQueries.map((item, idx) => (
@@ -198,15 +209,15 @@ export default function Dashboard({
                 <Wheat className="w-6 h-6 text-emerald-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-100">వ్యవసాయ సహాయకుడు (Farmer Corner)</h3>
-                <p className="text-xs text-slate-400 mt-0.5">పంట సంరక్షణ, ఎరువులు మరియు వ్యవసాయ ప్రభుత్వ పథకాలు</p>
+                <h3 className="text-lg font-bold text-slate-100">{t("askFarmer", lang)}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{t("askFarmerDesc", lang)}</p>
               </div>
             </div>
             <div className="space-y-4">
               <textarea
                 value={farmerQuery}
                 onChange={(e) => setFarmerQuery(e.target.value)}
-                placeholder="ఉదాహరణకు: వరి పంటలో తెగుళ్ళను అరికట్టడం ఎలా? లేదా రైతు భరోసా పథకం అర్హతలు ఏమిటి?"
+                placeholder={t("askFarmerPlaceholder", lang)}
                 className="w-full h-28 py-4 px-4 rounded-2xl bg-slate-950/60 border border-slate-850 text-slate-200 placeholder:text-slate-650 focus:outline-none focus:border-blue-500 text-sm transition-colors"
               />
               <button
@@ -215,7 +226,7 @@ export default function Dashboard({
                 }}
                 className="py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                సలహా పొందండి (Get Advice)
+                {t("submit", lang)}
               </button>
             </div>
           </div>
@@ -229,18 +240,20 @@ export default function Dashboard({
                 <HeartPulse className="w-6 h-6 text-red-500 animate-pulse" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-100">ఆరోగ్య సహాయకుడు (Health Assistant)</h3>
-                <p className="text-xs text-slate-400 mt-0.5">సాధారణ రోగాలు, మందులు మరియు వైద్య సలహాలు</p>
+                <h3 className="text-lg font-bold text-slate-100">{t("askHealth", lang)}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{t("askHealthDesc", lang)}</p>
               </div>
             </div>
             <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 text-xs text-yellow-400 rounded-xl leading-relaxed">
-              ⚠️ **గమనిక:** ఇది కేవలం ప్రాథమిక సమాచారం కోసం మాత్రమే. అత్యవసర పరిస్థితుల్లో దయచేసి తక్షణమే వైద్యుడిని సంప్రదించండి.
+              {lang === "te" 
+                ? "⚠️ గమనిక: ఇది కేవలం ప్రాథమిక సమాచారం కోసం మాత్రమే. అత్యవసర పరిస్థితుల్లో దయచేసి తక్షణమే వైద్యుడిని సంప్రదించండి."
+                : "⚠️ Note: This is for general informational purposes only. In case of an emergency, please consult a medical professional immediately."}
             </div>
             <div className="space-y-4">
               <textarea
                 value={healthQuery}
                 onChange={(e) => setHealthQuery(e.target.value)}
-                placeholder="ఉదాహరణకు: జలుబు మరియు దగ్గు నివారణకు ఎలాంటి చిట్కాలు ఉన్నాయి? లేదా ఈ పారాసిటమాల్ టాబ్లెట్ ఎప్పుడు వాడాలి?"
+                placeholder={t("askHealthPlaceholder", lang)}
                 className="w-full h-28 py-4 px-4 rounded-2xl bg-slate-950/60 border border-slate-850 text-slate-200 placeholder:text-slate-650 focus:outline-none focus:border-blue-500 text-sm transition-colors"
               />
               <button
@@ -249,7 +262,7 @@ export default function Dashboard({
                 }}
                 className="py-3 px-6 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all shadow-lg shadow-red-600/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                సలహా కోరండి (Ask Health Advisor)
+                {t("submit", lang)}
               </button>
             </div>
           </div>
@@ -263,8 +276,8 @@ export default function Dashboard({
                 <Landmark className="w-6 h-6 text-amber-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-100">ప్రభుత్వ సేవలు (Government Services)</h3>
-                <p className="text-xs text-slate-400 mt-0.5">ఆధార్, పింఛన్, రేషన్ కార్డులు, మీసేవ మరియు ఆదాయ ధృవీకరణ పత్రాలు</p>
+                <h3 className="text-lg font-bold text-slate-100">{t("askGov", lang)}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{t("askGovDesc", lang)}</p>
               </div>
             </div>
 
@@ -288,7 +301,7 @@ export default function Dashboard({
               <textarea
                 value={govQuery}
                 onChange={(e) => setGovQuery(e.target.value)}
-                placeholder={`ఉదాహరణకు: ${govCategory} అప్డేట్ చేసుకోవడానికి అవసరమైన డాక్యుమెంట్లు ఏమిటి?`}
+                placeholder={lang === "te" ? `ఉదాహరణకు: ${govCategory} అప్డేట్ చేసుకోవడానికి అవసరమైన డాక్యుమెంట్లు ఏమిటి?` : `Example: What documents are required to update ${govCategory}?`}
                 className="w-full h-28 py-4 px-4 rounded-2xl bg-slate-950/60 border border-slate-850 text-slate-200 placeholder:text-slate-650 focus:outline-none focus:border-blue-500 text-sm transition-colors"
               />
               <button
@@ -297,7 +310,7 @@ export default function Dashboard({
                 }}
                 className="py-3 px-6 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-all shadow-lg shadow-amber-600/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                సమాచారం అడగండి (Query Gov Services)
+                {t("submit", lang)}
               </button>
             </div>
           </div>
@@ -311,16 +324,16 @@ export default function Dashboard({
                 <Languages className="w-6 h-6 text-indigo-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-100">భాషాంతర సేవ (Translation)</h3>
-                <p className="text-xs text-slate-400 mt-0.5">తెలుగు, ఇంగ్లీష్ మరియు రోమన్ స్క్రిప్ట్ (తంగ్లిష్) అనువాదాలు</p>
+                <h3 className="text-lg font-bold text-slate-100">{t("translatorTitle", lang)}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{t("transDesc", lang)}</p>
               </div>
             </div>
 
             <div className="flex gap-2">
               {[
-                { id: "en-te", label: "English ➔ Telugu" },
-                { id: "te-en", label: "Telugu ➔ English" },
-                { id: "roman-te", label: "Roman Telugu ➔ Telugu Script" },
+                { id: "en-te", label: t("entote", lang) },
+                { id: "te-en", label: t("teentoen", lang) },
+                { id: "roman-te", label: t("romantote", lang) },
               ].map((dir) => (
                 <button
                   key={dir.id}
@@ -338,21 +351,25 @@ export default function Dashboard({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">ఇన్పుట్ టెక్స్ట్</label>
+                <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                  {lang === "te" ? "ఇన్పుట్ టెక్స్ట్" : "Input Text"}
+                </label>
                 <textarea
                   value={transText}
                   onChange={(e) => setTransText(e.target.value)}
-                  placeholder="అనువదించాల్సిన వాక్యాన్ని ఇక్కడ నమోదు చేయండి..."
+                  placeholder={t("transPlaceholder", lang)}
                   className="w-full h-32 py-3 px-4 rounded-2xl bg-slate-950/60 border border-slate-850 text-slate-200 placeholder:text-slate-650 focus:outline-none focus:border-blue-500 text-sm transition-colors"
                 />
               </div>
               <div className="space-y-1.5 flex flex-col">
-                <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">అనువాద ఫలితం</label>
+                <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+                  {t("transResultLabel", lang)}
+                </label>
                 <div className="flex-grow h-32 py-3.5 px-4 rounded-2xl bg-slate-950/30 border border-slate-900 text-slate-200 text-sm overflow-y-auto leading-relaxed whitespace-pre-wrap">
                   {transLoading ? (
-                    <span className="text-slate-500 italic animate-pulse">అనువదిస్తోంది (Translating)...</span>
+                    <span className="text-slate-500 italic animate-pulse">{t("transLoading", lang)}</span>
                   ) : (
-                    transResult || <span className="text-slate-700 italic">అనువదించిన టెక్స్ట్ ఇక్కడ కనిపిస్తుంది...</span>
+                    transResult || <span className="text-slate-700 italic">{lang === "te" ? "అనువదించిన టెక్స్ట్ ఇక్కడ కనిపిస్తుంది..." : "Translated text will appear here..."}</span>
                   )}
                 </div>
               </div>
@@ -363,7 +380,7 @@ export default function Dashboard({
               disabled={transLoading || !transText.trim()}
               className="py-3 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
             >
-              అనువదించు (Translate)
+              {t("transButton", lang)}
             </button>
           </div>
         )}
@@ -376,13 +393,13 @@ export default function Dashboard({
                 <BookmarkCheck className="w-6 h-6 text-sky-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-100">నా బుక్‌మార్క్స్ (Bookmarks)</h3>
-                <p className="text-xs text-slate-400 mt-0.5">మళ్ళీ చదువుకోవడానికి దాచుకున్న ముఖ్యమైన సమాధానాలు</p>
+                <h3 className="text-lg font-bold text-slate-100">{t("bookmarksTitle", lang)}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{lang === "te" ? "మళ్ళీ చదువుకోవడానికి దాచుకున్న ముఖ్యమైన సమాధానాలు" : "Saved important answers for future reference"}</p>
               </div>
             </div>
 
             {bookmarks.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-16">బుక్‌మార్క్ చేసిన ప్రశ్నలు ఏవీ లేవు</p>
+              <p className="text-xs text-slate-500 text-center py-16">{t("noBookmarks", lang)}</p>
             ) : (
               <div className="space-y-4">
                 {bookmarks.map((bm) => (
@@ -400,7 +417,7 @@ export default function Dashboard({
                     <button
                       onClick={() => handleDeleteBookmark(bm.id)}
                       className="p-1.5 text-slate-650 hover:text-red-400 transition-colors cursor-pointer shrink-0"
-                      title="Remove Bookmark"
+                      title={t("deleteBookmark", lang)}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

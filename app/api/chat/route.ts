@@ -12,7 +12,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action } = body;
+    const { action, language = "te" } = body;
 
     if (!action) {
       return NextResponse.json({ error: "Missing action parameter" }, { status: 400 });
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         if (!messages || !Array.isArray(messages)) {
           return NextResponse.json({ error: "Invalid messages parameter" }, { status: 400 });
         }
-        result = await chatWithAI(messages, model);
+        result = await chatWithAI(messages, model, language);
         break;
       }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         if (!query) {
           return NextResponse.json({ error: "Missing query parameter" }, { status: 400 });
         }
-        result = await governmentAssistant(query, category);
+        result = await governmentAssistant(query, category, language);
         break;
       }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         if (!query) {
           return NextResponse.json({ error: "Missing query parameter" }, { status: 400 });
         }
-        result = await healthAssistant(query);
+        result = await healthAssistant(query, language);
         break;
       }
 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         if (!query) {
           return NextResponse.json({ error: "Missing query parameter" }, { status: 400 });
         }
-        result = await agricultureAssistant(query);
+        result = await agricultureAssistant(query, language);
         break;
       }
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         if (!text) {
           return NextResponse.json({ error: "Missing text parameter" }, { status: 400 });
         }
-        result = await summarize(text);
+        result = await summarize(text, language);
         break;
       }
 
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         if (!imageBase64 || !mimeType) {
           return NextResponse.json({ error: "Missing imageBase64 or mimeType parameter" }, { status: 400 });
         }
-        result = await explainImage(imageBase64, mimeType, prompt);
+        result = await explainImage(imageBase64, mimeType, prompt, language);
         break;
       }
 

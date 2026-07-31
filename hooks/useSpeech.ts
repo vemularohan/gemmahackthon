@@ -16,7 +16,13 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
   const synthesisRef = useRef<SpeechSynthesis | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Use refs to store callbacks and transcript to prevent useEffect from re-running and aborting speech
+  // Queue system for latency-free sentence-by-sentence reading
+  const speechQueueRef = useRef<string[]>([]);
+  const queueIndexRef = useRef<number>(0);
+  const isPlayingQueueRef = useRef<boolean>(false);
+  const currentLanguageRef = useRef<"te" | "en">("te");
+  const onEndCallbackRef = useRef<(() => void) | undefined>(undefined);
+
   const onResultRef = useRef(onResult);
   const onSpeechEndRef = useRef(onSpeechEnd);
   const transcriptRef = useRef(transcript);
@@ -41,7 +47,7 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
         const recObj = new SpeechRecognition();
         recObj.continuous = false;
         recObj.interimResults = true;
-        recObj.lang = "te-IN"; // Telugu (India)
+        recObj.lang = "te-IN"; // Default Telugu (India)
 
         recObj.onstart = () => {
           setIsListening(true);
@@ -66,7 +72,6 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
 
         recObj.onend = () => {
           setIsListening(false);
-          // Trigger speech end callback with the latest transcript ref
           if (onSpeechEndRef.current) {
             onSpeechEndRef.current(transcriptRef.current);
           }
@@ -79,96 +84,159 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
       if (window.speechSynthesis) {
         setSynthesisSupported(true);
         synthesisRef.current = window.speechSynthesis;
+        // Pre-fetch voices
+        window.speechSynthesis.getVoices();
       }
     }
 
     return () => {
-      // Clean up recognition object on unmount only
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
+      if (synthesisRef.current) {
+        synthesisRef.current.cancel();
+      }
     };
-  }, []); // Run only once on mount
+  }, []);
 
-  // Start Speech Recognition
-  const startListening = () => {
+  const startListening = (lang: "te" | "en" = "te") => {
     if (!speechSupported || !recognitionRef.current) {
       console.warn("Speech recognition is not supported in this browser.");
       return;
     }
-    // Stop speaking if currently speaking
     stopSpeaking();
     
     try {
+      recognitionRef.current.lang = lang === "en" ? "en-US" : "te-IN";
       recognitionRef.current.start();
     } catch (e) {
       console.warn("Failed to start speech recognition:", e);
     }
   };
 
-  // Stop Speech Recognition
   const stopListening = () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
   };
 
-  // Speak Text using SpeechSynthesis
-  const speak = (text: string, onEndCallback?: () => void) => {
-    if (!synthesisSupported || !synthesisRef.current) {
-      console.warn("Speech synthesis is not supported in this browser.");
+  // Helper to play the next item in the speech queue
+  const playNextInQueue = () => {
+    if (!synthesisRef.current || !isPlayingQueueRef.current) return;
+
+    if (queueIndexRef.current >= speechQueueRef.current.length) {
+      // Completed all chunks
+      setIsSpeaking(false);
+      isPlayingQueueRef.current = false;
+      if (onEndCallbackRef.current) {
+        onEndCallbackRef.current();
+      }
       return;
     }
 
-    // Cancel active synthesis before starting a new one
-    synthesisRef.current.cancel();
+    const chunk = speechQueueRef.current[queueIndexRef.current];
+    queueIndexRef.current += 1;
 
-    // Remove markdown symbols for cleaner pronunciation
-    const cleanText = text
-      .replace(/[*#_`~[\]()]/g, "") // Remove common markdown symbols
-      .replace(/-\s+/g, "") // Remove dash bullet points
-      .trim();
-
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utteranceRef.current = utterance;
-    
-    // Attempt to set a Telugu voice
-    const voices = synthesisRef.current.getVoices();
-    const teluguVoice = voices.find(
-      (voice) => voice.lang.includes("te") || voice.name.toLowerCase().includes("telugu")
-    );
-
-    if (teluguVoice) {
-      utterance.voice = teluguVoice;
-    } else {
-      // Default fallback
-      utterance.lang = "te-IN";
+    if (!chunk.trim()) {
+      // Skip empty chunks
+      playNextInQueue();
+      return;
     }
+
+    const utterance = new SpeechSynthesisUtterance(chunk);
+    utteranceRef.current = utterance;
+
+    // Retrieve best voice for current language
+    const voices = synthesisRef.current.getVoices();
+    const targetLang = currentLanguageRef.current;
+
+    let selectedVoice = null;
+
+    if (targetLang === "en") {
+      // Find premium sounding english voices
+      selectedVoice = voices.find(
+        (v) =>
+          v.lang.startsWith("en") &&
+          (v.name.toLowerCase().includes("google") ||
+            v.name.toLowerCase().includes("natural") ||
+            v.name.toLowerCase().includes("siri"))
+      ) || voices.find((v) => v.lang.startsWith("en"));
+    } else {
+      // Find telugu voices
+      selectedVoice = voices.find(
+        (v) =>
+          v.lang.includes("te") ||
+          v.name.toLowerCase().includes("telugu")
+      );
+    }
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    } else {
+      utterance.lang = targetLang === "en" ? "en-US" : "te-IN";
+    }
+
+    // Set human voice parameters (moderate rate, natural pitch)
+    utterance.rate = targetLang === "te" ? 0.95 : 1.0; 
+    utterance.pitch = 1.0;
 
     utterance.onstart = () => {
       setIsSpeaking(true);
     };
 
     utterance.onend = () => {
-      setIsSpeaking(false);
-      if (onEndCallback) onEndCallback();
+      playNextInQueue();
     };
 
     utterance.onerror = (e) => {
-      console.warn("Speech Synthesis Error:", e);
-      setIsSpeaking(false);
-      if (onEndCallback) onEndCallback();
+      console.warn("Speech Synthesis Utterance Error:", e);
+      playNextInQueue();
     };
 
     synthesisRef.current.speak(utterance);
   };
 
-  // Stop Speech Synthesis
+  // Speak text with sentence chunking for latency-free delivery and language selection
+  const speak = (text: string, language: "te" | "en" = "te", onEndCallback?: () => void) => {
+    if (!synthesisSupported || !synthesisRef.current) {
+      console.warn("Speech synthesis is not supported in this browser.");
+      return;
+    }
+
+    // Clear active synthesis and queue
+    synthesisRef.current.cancel();
+    isPlayingQueueRef.current = false;
+
+    // Clean text and split by sentences
+    const cleanText = text
+      .replace(/[*#_`~[\]()]/g, "") // Remove markdown
+      .replace(/-\s+/g, "") // Remove bullets
+      .trim();
+
+    // Split by sentence delimiters (dot, question, exclamation, devanagari/telugu danda)
+    const sentences = cleanText
+      .split(/(?<=[.?!।\n])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    if (sentences.length === 0) return;
+
+    speechQueueRef.current = sentences;
+    queueIndexRef.current = 0;
+    isPlayingQueueRef.current = true;
+    currentLanguageRef.current = language;
+    onEndCallbackRef.current = onEndCallback;
+
+    // Begin playing queue immediately
+    playNextInQueue();
+  };
+
   const stopSpeaking = () => {
+    isPlayingQueueRef.current = false;
     if (synthesisRef.current) {
       synthesisRef.current.cancel();
-      setIsSpeaking(false);
     }
+    setIsSpeaking(false);
   };
 
   return {

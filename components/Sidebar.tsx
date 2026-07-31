@@ -13,7 +13,9 @@ import {
   Home,
   User,
 } from "lucide-react";
-import { authService, dbService } from "@/lib/firebase";
+import { authService } from "@/lib/firebase";
+import { useAccessibility } from "@/context/AccessibilityContext";
+import { t } from "@/utils/translations";
 
 interface SidebarProps {
   user: any;
@@ -40,6 +42,9 @@ export default function Sidebar({
   onOpenSettings,
   onGoHome,
 }: SidebarProps) {
+  const { settings } = useAccessibility();
+  const lang = settings.language || "te";
+
   return (
     <aside className="w-80 bg-slate-950/80 border-r border-slate-800/80 backdrop-blur-md flex flex-col h-full shrink-0">
       {/* Brand Header */}
@@ -53,9 +58,9 @@ export default function Sidebar({
           </div>
           <div>
             <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1">
-              సారథి AI <span className="text-[8px] py-0.5 px-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 font-bold">Gemma 4</span>
+              {t("brandName", lang)} <span className="text-[8px] py-0.5 px-1 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-400 font-bold">Gemma 4</span>
             </h1>
-            <p className="text-[9px] text-slate-500 font-medium -mt-0.5">తెలుగు డిజిటల్ అసిస్టెంట్</p>
+            <p className="text-[9px] text-slate-500 font-medium -mt-0.5">{t("brandSub", lang)}</p>
           </div>
         </button>
 
@@ -63,8 +68,8 @@ export default function Sidebar({
         <button
           onClick={onLaunchVoiceMode}
           className="p-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-xl transition-all cursor-pointer"
-          title="Launch Voice Mode"
-          aria-label="Launch voice mode"
+          title={t("voiceAssistant", lang)}
+          aria-label={t("voiceAssistant", lang)}
         >
           <Mic className="w-4 h-4 animate-pulse" />
         </button>
@@ -77,7 +82,7 @@ export default function Sidebar({
           className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/15 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          కొత్త సంభాషణ (New Chat)
+          {t("newChat", lang)}
         </button>
 
         <button
@@ -85,7 +90,7 @@ export default function Sidebar({
           className="w-full py-2.5 px-4 bg-slate-900/50 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-slate-350 hover:text-slate-100 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <Home className="w-4 h-4" />
-          ముఖ్య పేజీ (Dashboard Home)
+          {t("goHome", lang)}
         </button>
       </div>
 
@@ -94,7 +99,7 @@ export default function Sidebar({
         <div className="flex items-center justify-between mb-2 px-1">
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <MessageSquare className="w-3 h-3 text-slate-500" />
-            ఇటీవలి సంభాషణలు (Recent Chats)
+            {t("recentChats", lang)}
           </span>
           <span className="text-[10px] text-slate-650 bg-slate-900/40 px-1.5 py-0.5 rounded font-bold">
             {recentChats.length}
@@ -105,7 +110,7 @@ export default function Sidebar({
           {recentChats.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-4">
               <MessageSquare className="w-8 h-8 text-slate-800 mb-2" />
-              <p className="text-[10px] text-slate-600">సంభాషణలు ఇంకా లేవు</p>
+              <p className="text-[10px] text-slate-600">{t("noChatsYet", lang)}</p>
             </div>
           ) : (
             recentChats.map((chat) => {
@@ -120,7 +125,7 @@ export default function Sidebar({
                       : "bg-slate-900/10 border-slate-900/50 text-slate-400 hover:bg-slate-900/50 hover:text-slate-200"
                   }`}
                 >
-                  <span className="truncate pr-2 text-xs leading-normal">{chat.title || "తెలుగు సంభాషణ"}</span>
+                  <span className="truncate pr-2 text-xs leading-normal">{chat.title || (lang === "te" ? "తెలుగు సంభాషణ" : "Conversation")}</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -146,7 +151,7 @@ export default function Sidebar({
           className="w-full py-2.5 px-3 rounded-xl hover:bg-slate-900 text-slate-400 hover:text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
         >
           <SettingsIcon className="w-4.5 h-4.5" />
-          అనుకూలత సెట్టింగులు (Accessibility)
+          {t("accessibilitySettings", lang)}
         </button>
 
         {/* User profile card */}
@@ -157,16 +162,16 @@ export default function Sidebar({
             </div>
             <div className="min-w-0">
               <h4 className="text-xs font-bold text-slate-200 truncate">
-                {user ? user.displayName || "User" : "అతిథి (Guest)"}
+                {user ? user.displayName || "User" : t("guest", lang)}
               </h4>
-              <p className="text-[9px] text-slate-500 truncate">{user ? user.email : "పరిమిత అధికారాలు"}</p>
+              <p className="text-[9px] text-slate-500 truncate">{user ? user.email : t("limitedPermissions", lang)}</p>
             </div>
           </div>
           {user ? (
             <button
               onClick={() => authService.logout()}
               className="p-1.5 hover:bg-slate-900 rounded-lg text-slate-400 hover:text-red-400 transition-colors cursor-pointer shrink-0"
-              title="Sign Out"
+              title={t("logout", lang)}
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -175,7 +180,7 @@ export default function Sidebar({
               onClick={onOpenAuth}
               className="py-1 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold rounded-lg transition-colors cursor-pointer shrink-0"
             >
-              లాగిన్
+              {t("login", lang)}
             </button>
           )}
         </div>

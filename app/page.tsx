@@ -8,6 +8,8 @@ import ChatInterface from "@/components/ChatInterface";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import AuthModal from "@/components/AuthModal";
 import { authService, dbService } from "@/lib/firebase";
+import { useAccessibility } from "@/context/AccessibilityContext";
+import { t } from "@/utils/translations";
 
 interface Message {
   id: string;
@@ -17,6 +19,8 @@ interface Message {
 }
 
 export default function Home() {
+  const { settings } = useAccessibility();
+  const lang = settings.language || "te";
   const [user, setUser] = useState<any | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
@@ -74,7 +78,7 @@ export default function Home() {
     const chatId = activeChatId || Math.random().toString(36).substring(7);
     
     // Generate a title based on the first message
-    const title = messages[0]?.content.substring(0, 30) || "కొత్త సంభాషణ";
+    const title = messages[0]?.content.substring(0, 30) || (lang === "te" ? "కొత్త సంభాషణ" : "New Chat");
     
     await dbService.saveChat(userId, chatId, title, messages);
     if (!activeChatId) {
@@ -234,17 +238,17 @@ export default function Home() {
             {activeChatId ? (
               <button
                 onClick={handleNewChat}
-                className="flex items-center gap-1.5 py-1.5 px-3 bg-slate-900 hover:bg-slate-850 border border-slate-850 rounded-xl text-xs font-bold text-slate-350 cursor-pointer"
+                className="flex items-center gap-1.5 py-1.5 px-3 bg-slate-900 hover:bg-slate-850 border border-slate-850 rounded-xl text-xs font-bold text-slate-355 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
-                వెనుకకు (Home)
+                {t("backToHome", lang)}
               </button>
             ) : (
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center lg:hidden">
                   <Sparkles className="w-3.5 h-3.5 text-blue-400" />
                 </div>
-                <h1 className="text-sm font-black text-white lg:hidden">సారథి AI</h1>
+                <h1 className="text-sm font-black text-white lg:hidden">{t("brandName", lang)}</h1>
               </div>
             )}
           </div>
@@ -256,7 +260,7 @@ export default function Home() {
               className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-blue-600/20 transition-all hover:scale-[1.02] cursor-pointer"
             >
               <Mic className="w-4 h-4" />
-              <span>వాయిస్ సహాయకుడు</span>
+              <span>{t("voiceAssistant", lang)}</span>
             </button>
 
             {/* Quick Auth Trigger on Header */}
@@ -266,7 +270,7 @@ export default function Home() {
                 className="py-2.5 px-3 bg-slate-900 border border-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-bold flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
               >
                 <LogIn className="w-4 h-4" />
-                లాగిన్
+                {t("login", lang)}
               </button>
             )}
           </div>

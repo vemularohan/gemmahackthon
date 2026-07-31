@@ -383,218 +383,231 @@ export default function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950/40 rounded-3xl border border-slate-800/80 overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-950/20 rounded-3xl border border-slate-900/60 overflow-hidden relative">
       {/* Messages Window */}
       <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-thin">
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-blue-600/10 border border-blue-500/20 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-blue-400 animate-pulse" />
+        <div className="max-w-3xl mx-auto w-full space-y-6">
+          {messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center py-20 px-6 space-y-6">
+              <div className="w-16 h-16 rounded-full bg-blue-600/10 border border-blue-500/20 flex items-center justify-center animate-pulse">
+                <Sparkles className="w-8 h-8 text-blue-400" />
+              </div>
+              <div className="max-w-md space-y-2">
+                <h3 className="text-xl font-bold text-slate-200">ఎలా సహాయం చేయగలను? (How can I help?)</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  మీరు మీ ప్రశ్నను కింద టైప్ చేయవచ్చు లేదా మైక్రోఫోన్ నొక్కి వాయిస్ ద్వారా అడగవచ్చు. ఇంగ్లీష్ లేదా తెలుగు పదాల కలయికతో కూడా అడగవచ్చు.
+                </p>
+              </div>
             </div>
-            <div className="max-w-md">
-              <h3 className="text-lg font-bold text-slate-200">ఎలా సహాయం చేయగలను? (How can I help?)</h3>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                మీరు మీ ప్రశ్నను కింద టైప్ చేయవచ్చు లేదా మైక్రోఫోన్ నొక్కి వాయిస్ ద్వారా అడగవచ్చు. ఇంగ్లీష్ లేదా తెలుగు పదాల కలయికతో కూడా అడగవచ్చు.
-              </p>
-            </div>
-          </div>
-        ) : (
-          messages.map((msg) => {
-            const isUser = msg.role === "user";
-            const isSpeechActive = activeSpeechId === msg.id && isSpeaking;
+          ) : (
+            messages.map((msg) => {
+              const isUser = msg.role === "user";
+              const isSpeechActive = activeSpeechId === msg.id && isSpeaking;
 
-            return (
-              <div
-                key={msg.id}
-                className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${
-                  isUser ? "ml-auto flex-row-reverse" : "mr-auto"
-                }`}
-              >
-                {/* Avatar */}
+              return (
                 <div
-                  className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center border ${
-                    isUser
-                      ? "bg-slate-900 border-slate-800 text-blue-400"
-                      : "bg-blue-600 border-blue-500 text-white"
+                  key={msg.id}
+                  className={`flex gap-4 w-full ${
+                    isUser ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {isUser ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-                </div>
-
-                {/* Bubble */}
-                <div className="space-y-2">
-                  <div
-                    className={`py-3 px-4 rounded-3xl border shadow-sm ${
-                      isUser
-                        ? "bg-blue-900/40 border-blue-800/50 text-slate-100 rounded-tr-none"
-                        : "bg-slate-900/80 border-slate-800/80 text-slate-100 rounded-tl-none"
-                    }`}
-                  >
-                    {/* Render Image attachment if exists */}
-                    {msg.image && (
-                      <div className="mb-3 max-w-xs overflow-hidden rounded-xl border border-slate-700/50">
-                        <img src={msg.image} alt="Uploaded attachment" className="w-full h-auto object-cover" />
-                      </div>
-                    )}
-                    <div className="text-sm font-normal break-words whitespace-pre-wrap">
-                      {isUser ? msg.content : renderMarkdown(msg.content)}
-                    </div>
-                  </div>
-
-                  {/* Bubble Actions */}
+                  {/* Left Avatar for Assistant */}
                   {!isUser && (
-                    <div className="flex items-center gap-1.5 pl-2">
-                      <button
-                        onClick={() => handleVoicePlay(msg.content, msg.id)}
-                        className={`p-1.5 rounded-lg hover:bg-slate-800/80 transition-colors cursor-pointer ${
-                          isSpeechActive ? "text-sky-400" : "text-slate-500 hover:text-slate-300"
-                        }`}
-                        title={isSpeechActive ? "Stop voice" : "Read response"}
-                      >
-                        {isSpeechActive ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                      </button>
-
-                      <button
-                        onClick={() => handleCopy(msg.content, msg.id)}
-                        className="p-1.5 rounded-lg hover:bg-slate-800/80 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                        title="Copy to clipboard"
-                      >
-                        {copiedId === msg.id ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                      </button>
-
-                      <button
-                        onClick={() => handleShare(msg.content)}
-                        className="p-1.5 rounded-lg hover:bg-slate-800/80 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                        title="Share response"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </button>
+                    <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center border bg-blue-600 border-blue-500 text-white">
+                      <Sparkles className="w-4 h-4" />
                     </div>
                   )}
-                </div>
-              </div>
-            );
-          })
-        )}
 
-        {/* Loading Indicator */}
-        {loading && (
-          <div className="flex gap-3 mr-auto max-w-[75%]">
-            <div className="w-9 h-9 rounded-full bg-blue-600 border border-blue-500 text-white flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 animate-spin" />
+                  {/* Bubble / Text block */}
+                  <div className={`space-y-1 ${isUser ? "max-w-[80%]" : "flex-1"}`}>
+                    {isUser ? (
+                      // User bubble
+                      <div className="bg-zinc-800/80 border border-zinc-700/50 text-slate-100 px-4 py-2.5 rounded-[22px] shadow-sm text-sm break-words whitespace-pre-wrap">
+                        {msg.image && (
+                          <div className="mb-2 max-w-xs overflow-hidden rounded-xl border border-slate-700/50">
+                            <img src={msg.image} alt="Uploaded attachment" className="w-full h-auto object-cover" />
+                          </div>
+                        )}
+                        {msg.content}
+                      </div>
+                    ) : (
+                      // Assistant response (plain text like ChatGPT, no bubble background)
+                      <div className="text-slate-100 text-sm leading-relaxed font-normal break-words pt-1">
+                        {renderMarkdown(msg.content)}
+                      </div>
+                    )}
+
+                    {/* Bubble Actions for Assistant */}
+                    {!isUser && (
+                      <div className="flex items-center gap-1 mt-1 text-slate-500">
+                        <button
+                          onClick={() => handleVoicePlay(msg.content, msg.id)}
+                          className={`p-1.5 rounded-lg hover:bg-slate-900 transition-colors cursor-pointer ${
+                            isSpeechActive ? "text-sky-400" : "hover:text-slate-350"
+                          }`}
+                          title={isSpeechActive ? "Stop voice" : "Read response"}
+                        >
+                          {isSpeechActive ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                        </button>
+
+                        <button
+                          onClick={() => handleCopy(msg.content, msg.id)}
+                          className="p-1.5 rounded-lg hover:bg-slate-900 hover:text-slate-350 transition-colors cursor-pointer"
+                          title="Copy to clipboard"
+                        >
+                          {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+
+                        <button
+                          onClick={() => handleShare(msg.content)}
+                          className="p-1.5 rounded-lg hover:bg-slate-900 hover:text-slate-350 transition-colors cursor-pointer"
+                          title="Share response"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+
+          {/* Loading Indicator */}
+          {loading && (
+            <div className="flex gap-4 w-full justify-start">
+              <div className="w-8 h-8 rounded-full bg-blue-600 border border-blue-500 text-white flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 animate-spin" />
+              </div>
+              <div className="flex items-center gap-1 py-3 text-slate-400">
+                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" />
+              </div>
             </div>
-            <div className="py-3 px-4 rounded-3xl rounded-tl-none bg-slate-900/60 border border-slate-800/80 shadow-sm flex items-center gap-1.5">
-              <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-              <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-              <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" />
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Uploaded File Preview Banner */}
       {imageFile && (
-        <div className="mx-4 mb-2 p-2 rounded-xl bg-slate-900 border border-slate-880 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-800">
-              <img src={imageFile} alt="Preview" className="w-full h-full object-cover" />
+        <div className="max-w-3xl mx-auto w-full px-4 mb-2">
+          <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-800">
+                <img src={imageFile} alt="Preview" className="w-full h-full object-cover" />
+              </div>
+              <span className="text-xs text-slate-400">
+                {settings.language === "en" ? "Image attached" : "చిత్రం జతచేయబడింది"}
+              </span>
             </div>
-            <span className="text-xs text-slate-400">
-              {settings.language === "en" ? "Image attached" : "చిత్రం జతచేయబడింది"}
-            </span>
+            <button
+              onClick={() => {
+                setImageFile(null);
+                setImageMimeType(null);
+              }}
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-lg transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={() => {
-              setImageFile(null);
-              setImageMimeType(null);
-            }}
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-lg transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
       )}
 
-      {/* Input controls */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-900/50 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          {/* File Upload button */}
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="p-3 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-850 rounded-xl transition-all cursor-pointer"
-            title="Attach crop photo, bill or prescription"
-            aria-label="Attach image"
-          >
-            <ImageIcon className="w-5 h-5" />
-          </button>
-
-          {/* Inline Speech Recognition */}
-          <button
-            onClick={isListening ? stopListening : () => startListening(lang)}
-            className={`p-3 border rounded-xl transition-all cursor-pointer ${
-              isListening
-                ? "bg-red-900/50 border-red-800 text-red-400 animate-pulse"
-                : "bg-slate-900 border-slate-850 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-            }`}
-            title="Talk to text"
-            aria-label={isListening ? "Stop listening" : "Start voice to text"}
-          >
-            <Mic className="w-5 h-5" />
-          </button>
-
-          {/* Text Input */}
-          <div className="relative flex-grow">
+      {/* ChatGPT Styled Pill Input controls */}
+      <div className="p-4 bg-transparent">
+        <div className="max-w-3xl mx-auto w-full">
+          <div className="bg-slate-900/90 border border-slate-850 rounded-[28px] p-2 flex items-center gap-2 shadow-lg backdrop-blur-md">
+            {/* File Upload button */}
             <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={isListening 
-                ? (settings.language === "en" ? "Listening..." : "వింటున్నాను...") 
-                : t("chatPlaceholder", settings.language || "te")}
-              className="w-full py-3.5 pl-4 pr-12 rounded-xl bg-slate-950/60 border border-slate-850 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500 text-sm transition-colors"
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
             />
-            {inputValue && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2.5 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-full transition-all cursor-pointer"
+              title="Attach photo"
+              aria-label="Attach image"
+            >
+              <ImageIcon className="w-5 h-5" />
+            </button>
+
+            {/* Inline Speech Recognition */}
+            <button
+              onClick={isListening ? stopListening : () => startListening(lang)}
+              className={`p-2.5 rounded-full transition-all cursor-pointer ${
+                isListening
+                  ? "bg-red-950/80 text-red-400"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+              title="Talk to text"
+              aria-label={isListening ? "Stop listening" : "Start voice to text"}
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+
+            {/* Text Input */}
+            <div className="relative flex-grow flex items-center">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder={isListening 
+                  ? (settings.language === "en" ? "Listening..." : "వింటున్నాను...") 
+                  : t("chatPlaceholder", settings.language || "te")}
+                className="w-full py-2 bg-transparent text-slate-100 placeholder:text-slate-500 focus:outline-none text-sm"
+              />
+            </div>
+
+            {/* Send Button */}
+            <button
+              onClick={handleSend}
+              disabled={!inputValue.trim() && !imageFile}
+              className={`p-2.5 rounded-full transition-all cursor-pointer ${
+                inputValue.trim() || imageFile
+                  ? "bg-blue-600 text-white hover:bg-blue-500"
+                  : "text-slate-650 bg-slate-800/40 cursor-not-allowed"
+              }`}
+              aria-label="Send message"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+
+            {/* Divider line for Mobile assistant */}
+            <div className="w-px h-6 bg-slate-800 hidden sm:block mx-1" />
+
+            {/* Voice Assistant Launcher */}
+            <button
+              onClick={onLaunchVoiceMode}
+              className="hidden sm:flex items-center gap-1 px-4 py-2 bg-blue-900/40 border border-blue-800/50 hover:bg-blue-900/60 text-blue-300 text-xs font-semibold rounded-full shadow-sm transition-all cursor-pointer shrink-0"
+            >
+              <Mic className="w-3.5 h-3.5" />
+              {t("voiceAssistant", settings.language || "te")}
+            </button>
+          </div>
+
+          {/* ChatGPT Style Small Disclaimer Footer */}
+          <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-500 font-normal px-2">
+            <span>
+              {settings.language === "en" 
+                ? "Sarathi AI may display inaccurate info. Verification is recommended." 
+                : "సారథి AI పొరపాట్లు చేయవచ్చు. ముఖ్యమైన సమాచారాన్ని ధృవీకరించుకోండి."}
+            </span>
+            {messages.length > 0 && (
               <button
-                onClick={handleSend}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors cursor-pointer"
-                aria-label="Send message"
+                onClick={handleRegenerate}
+                className="flex items-center gap-1 hover:text-slate-400 transition-colors cursor-pointer"
               >
-                <Send className="w-3.5 h-3.5" />
+                <RefreshCw className="w-3 h-3" />
+                {t("regenerate", settings.language || "te")}
               </button>
             )}
           </div>
-
-          {/* Big Voice Assistant Launcher */}
-          <button
-            onClick={onLaunchVoiceMode}
-            className="hidden sm:flex items-center gap-1.5 py-3.5 px-4 bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer shrink-0"
-          >
-            <Mic className="w-4 h-4" />
-            {t("voiceAssistant", settings.language || "te")}
-          </button>
-        </div>
-
-        {/* Extra Utility Actions */}
-        <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-medium px-1">
-          <span>Google Gemma 4 via OpenRouter</span>
-          {messages.length > 0 && (
-            <button
-              onClick={handleRegenerate}
-              className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
-            >
-              <RefreshCw className="w-3 h-3" />
-              {t("regenerate", settings.language || "te")}
-            </button>
-          )}
         </div>
       </div>
     </div>

@@ -440,7 +440,7 @@ export default function ChatInterface({
             onClick={() => setShowMemoryPanel(!showMemoryPanel)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/5 bg-slate-900/60 hover:bg-slate-800 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer transition-colors"
           >
-            <BrainCircuit className="w-3.5 h-3.5 text-blue-400" />
+            <BrainCircuit className="w-3.5 h-3.5 text-emerald-450" />
             <span>{lang === "en" ? "Gemma Memory" : "జెమ్మా మెమరీ"}</span>
           </button>
         </div>
@@ -451,8 +451,8 @@ export default function ChatInterface({
             
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-20 px-6 space-y-6">
-                <div className="w-16 h-16 rounded-3xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center animate-pulse">
-                  <Sparkles className="w-7 h-7 text-blue-400" />
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center animate-pulse">
+                  <Sparkles className="w-7 h-7 text-emerald-450" />
                 </div>
                 <div className="max-w-md space-y-2">
                   <h3 className="text-xl font-black text-slate-100">
@@ -477,7 +477,7 @@ export default function ChatInterface({
                   >
                     {/* Assistant Avatar */}
                     {!isUser && (
-                      <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-blue-400 shadow-md">
+                      <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-emerald-450 shadow-md">
                         <Sparkles className="w-4 h-4" />
                       </div>
                     )}
@@ -485,9 +485,9 @@ export default function ChatInterface({
                     {/* Chat Bubble content */}
                     <div className={`space-y-1.5 ${isUser ? "max-w-[75%]" : "flex-1"}`}>
                       {isUser ? (
-                        <div className="bg-blue-600 text-white px-5 py-3 rounded-3xl shadow-sm text-sm break-words whitespace-pre-wrap font-medium">
+                        <div className="bg-emerald-600 text-white px-5 py-3 rounded-3xl shadow-sm text-sm break-words whitespace-pre-wrap font-medium">
                           {msg.image && (
-                            <div className="mb-2 max-w-xs overflow-hidden rounded-2xl border border-blue-500/30">
+                            <div className="mb-2 max-w-xs overflow-hidden rounded-2xl border border-white/5">
                               <img src={msg.image} alt="Attachment" className="w-full h-auto object-cover" />
                             </div>
                           )}
@@ -536,7 +536,7 @@ export default function ChatInterface({
             {/* Typing Indicator */}
             {loading && (
               <div className="flex gap-4 w-full justify-start">
-                <div className="w-8 h-8 rounded-xl border border-white/5 bg-slate-900 text-blue-400 flex items-center justify-center shrink-0 shadow-md">
+                <div className="w-8 h-8 rounded-xl border border-white/5 bg-slate-900 text-emerald-450 flex items-center justify-center shrink-0 shadow-md">
                   <Sparkles className="w-4 h-4 animate-spin" />
                 </div>
                 <div className="flex items-center gap-1 px-4 py-3 bg-slate-900/40 rounded-3xl border border-white/5">
@@ -559,7 +559,7 @@ export default function ChatInterface({
                 onClick={() => {
                   setInputValue(suggestion);
                 }}
-                className="text-xs bg-slate-900/40 border border-white/5 hover:border-blue-500/20 hover:bg-blue-500/5 px-4.5 py-2.5 rounded-full transition-all cursor-pointer text-slate-300 font-bold"
+                className="text-xs bg-slate-900/40 border border-white/5 hover:border-emerald-500/20 hover:bg-emerald-500/5 px-4.5 py-2.5 rounded-full transition-all cursor-pointer text-slate-300 font-bold"
               >
                 {suggestion}
               </button>
@@ -641,7 +641,7 @@ export default function ChatInterface({
                 disabled={!inputValue.trim() && !imageFile}
                 className={`p-3 rounded-full transition-all cursor-pointer shrink-0 ${
                   inputValue.trim() || imageFile
-                    ? "bg-blue-600 text-white hover:bg-blue-500 shadow-md shadow-blue-600/10"
+                    ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-md shadow-emerald-650/10"
                     : "text-slate-600 bg-slate-850/40 cursor-not-allowed"
                 }`}
               >
@@ -650,9 +650,10 @@ export default function ChatInterface({
 
               <div className="w-px h-6 bg-slate-800 hidden sm:block mx-1" />
 
+              {/* Voice Assist Button is formatted in Amber */}
               <button
                 onClick={onLaunchVoiceMode}
-                className="hidden sm:flex items-center gap-1.5 px-4.5 py-2 bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600/20 text-blue-400 text-xs font-black rounded-full shadow-sm transition-all cursor-pointer shrink-0"
+                className="hidden sm:flex items-center gap-1.5 px-4.5 py-2 bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/10 text-amber-400 text-xs font-black rounded-full shadow-sm transition-all cursor-pointer shrink-0"
               >
                 <Mic className="w-3.5 h-3.5" />
                 <span>{lang === "en" ? "Voice Live" : "వాయిస్ లైవ్"}</span>
@@ -685,7 +686,7 @@ export default function ChatInterface({
         <div className="w-80 border-l border-white/5 bg-slate-950/40 backdrop-blur-md p-6 flex flex-col justify-between shrink-0 h-full">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
+              <span className="text-[10px] font-black text-emerald-450 uppercase tracking-widest flex items-center gap-1.5">
                 <BrainCircuit className="w-4.5 h-4.5" />
                 {lang === "en" ? "Gemma Memory Layer" : "జెమ్మా మెమరీ పొర"}
               </span>

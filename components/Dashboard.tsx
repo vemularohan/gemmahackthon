@@ -234,7 +234,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
               onClick={() => setActiveTab(tab.id as DashboardTab)}
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all cursor-pointer ${
                 isActive
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/10"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/10"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
@@ -254,7 +254,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
         >
           {/* Welcome Premium Box */}
           <div className="glass-panel p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
             <div className="space-y-2 max-w-xl text-left">
               <h2 className="text-3xl font-black text-white leading-tight">
                 {lang === "en" ? "Saarathi AI Companion" : "సారథి AI డిజిటల్ తోడు"}
@@ -265,9 +265,10 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
                   : "మీ ద్విభాషా వాయిస్ సహాయకుడు. కింది విభాగాలు చూడండి లేదా నేరుగా మాట్లాడటానికి మైక్రోఫోన్ నొక్కండి."}
               </p>
             </div>
+            {/* Amber accent for voice Assistant Mode button */}
             <button
               onClick={onLaunchVoiceMode}
-              className="px-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-sm font-black text-white flex items-center gap-2 shadow-lg shadow-blue-600/10 transition-all hover:scale-[1.02] cursor-pointer shrink-0"
+              className="px-6 py-4 rounded-2xl bg-amber-600 hover:bg-amber-500 text-sm font-black text-white flex items-center gap-2 shadow-lg shadow-amber-500/10 transition-all hover:scale-[1.02] cursor-pointer shrink-0"
             >
               <Mic className="h-4 w-4 text-white" />
               <span>{t("voiceAssistant", lang)}</span>
@@ -277,9 +278,9 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
           {/* Premium Feature Split Sections */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Agriculture module preview */}
-            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-emerald-500/20 group">
+            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-white/10 group">
               <div>
-                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 w-11 h-11 flex items-center justify-center mb-4">
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 w-11 h-11 flex items-center justify-center mb-4">
                   <Wheat className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-black text-slate-100">{lang === "en" ? "Agriculture Hub" : "వ్యవసాయ కేంద్రం"}</h3>
@@ -297,9 +298,9 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
             </div>
 
             {/* Healthcare module preview */}
-            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-cyan-500/20 group">
+            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-white/10 group">
               <div>
-                <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 w-11 h-11 flex items-center justify-center mb-4">
+                <div className="p-3 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-450 w-11 h-11 flex items-center justify-center mb-4">
                   <HeartPulse className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-black text-slate-100">{lang === "en" ? "Healthcare Advice" : "ఆరోగ్య సహాయం"}</h3>
@@ -309,7 +310,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
               </div>
               <button
                 onClick={() => setActiveTab("health")}
-                className="mt-6 text-xs font-bold text-cyan-400 flex items-center gap-1 group-hover:text-cyan-350 cursor-pointer"
+                className="mt-6 text-xs font-bold text-teal-450 flex items-center gap-1 group-hover:text-teal-350 cursor-pointer"
               >
                 <span>{lang === "en" ? "Open Module" : "విభాగం తెరవండి"}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -317,9 +318,9 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
             </div>
 
             {/* Government welfare schemes preview */}
-            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-purple-500/20 group">
+            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-white/10 group">
               <div>
-                <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 w-11 h-11 flex items-center justify-center mb-4">
+                <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 w-11 h-11 flex items-center justify-center mb-4">
                   <Landmark className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-black text-slate-100">{lang === "en" ? "Welfare Schemes" : "ప్రభుత్వ పథకాలు"}</h3>
@@ -329,7 +330,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
               </div>
               <button
                 onClick={() => setActiveTab("government")}
-                className="mt-6 text-xs font-bold text-purple-400 flex items-center gap-1 group-hover:text-purple-350 cursor-pointer"
+                className="mt-6 text-xs font-bold text-amber-400 flex items-center gap-1 group-hover:text-amber-300 cursor-pointer"
               >
                 <span>{lang === "en" ? "Open Module" : "విభాగం తెరవండి"}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -351,13 +352,13 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
                   <p className="text-[10px] text-slate-500 font-bold uppercase">{lang === "en" ? "Health Advice" : "ఆరోగ్య సలహా"}</p>
                   <p className="text-base font-black text-orange-400 mt-1">{emergencyContacts.healthHelpline}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
+                <div className="p-3 rounded-xl bg-teal-500/5 border border-teal-500/10">
                   <p className="text-[10px] text-slate-500 font-bold uppercase">{lang === "en" ? "Farmer Call Center" : "రైతు హెల్ప్‌లైన్"}</p>
-                  <p className="text-xs font-black text-blue-400 mt-1 truncate">{emergencyContacts.farmerCallCenter}</p>
+                  <p className="text-xs font-black text-teal-400 mt-1 truncate">{emergencyContacts.farmerCallCenter}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
                   <p className="text-[10px] text-slate-500 font-bold uppercase">{lang === "en" ? "Women Helpline" : "మహిళా రక్షణ"}</p>
-                  <p className="text-base font-black text-purple-400 mt-1">{emergencyContacts.womenHelpline}</p>
+                  <p className="text-base font-black text-amber-400 mt-1">{emergencyContacts.womenHelpline}</p>
                 </div>
               </div>
             </div>
@@ -450,7 +451,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
           </div>
 
           {/* Plant Leaf OCR Vision Upload */}
-          <div className="glass-panel p-6 border border-emerald-500/10 text-left">
+          <div className="glass-panel p-6 border border-white/5 text-left">
             <h4 className="text-base font-black text-slate-100">
               {lang === "en" ? "Crop Disease Vision Diagnosis" : "మొక్కల తెగుళ్ల విజువల్ గుర్తింపు"}
             </h4>
@@ -470,7 +471,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => plantInputRef.current?.click()}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-slate-900/60 px-5 py-3 text-xs font-black text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/5 bg-slate-900/60 px-5 py-3 text-xs font-black text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <Upload className="h-4 w-4" />
                 <span>{lang === "en" ? "Upload / Capture Leaf" : "ఆకు ఫోటో అప్‌లోడ్ / కెమెరా"}</span>
@@ -547,8 +548,8 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
             <h3 className="text-xl font-black text-slate-100 mt-2">{t("askHealth", lang)}</h3>
           </div>
 
-          <div className="flex items-start gap-3 rounded-2xl border border-amber-500/10 bg-amber-500/5 p-4 text-xs text-amber-300">
-            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 rounded-2xl border border-white/5 bg-slate-900/40 p-4 text-xs text-teal-400">
+            <AlertCircle className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
               {lang === "en"
                 ? "Emergency warning is enabled. Serious symptoms are always redirected to doctors/hospitals. Disclaimers are included in all responses."
@@ -559,7 +560,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
           <textarea
             value={healthQuery}
             onChange={(event) => setHealthQuery(event.target.value)}
-            className="h-28 w-full rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-100 outline-none focus:border-cyan-500/40"
+            className="h-28 w-full rounded-2xl border border-white/5 bg-slate-950/70 p-4 text-sm text-slate-100 outline-none focus:border-teal-500/40"
             placeholder={t("askHealthPlaceholder", lang)}
           />
           <button
@@ -580,7 +581,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
         >
           <div className="glass-panel p-6 text-left space-y-4">
             <div>
-              <span className="px-2.5 py-1 rounded-full border border-purple-500/20 bg-purple-500/5 text-[10px] font-black uppercase text-purple-400 tracking-wider">
+              <span className="px-2.5 py-1 rounded-full border border-white/5 bg-slate-900/40 text-[10px] font-black uppercase text-amber-400 tracking-wider">
                 {lang === "en" ? "Welfare Schemes" : "ప్రభుత్వ పథకాలు"}
               </span>
               <h3 className="text-xl font-black text-slate-100 mt-2">
@@ -590,7 +591,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
             <textarea
               value={govQuery}
               onChange={(event) => setGovQuery(event.target.value)}
-              className="h-28 w-full rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-100 outline-none focus:border-purple-500/40"
+              className="h-28 w-full rounded-2xl border border-white/5 bg-slate-950/70 p-4 text-sm text-slate-100 outline-none focus:border-emerald-500/40"
               placeholder={t("askGovPlaceholder", lang)}
             />
             <button
@@ -602,7 +603,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
           </div>
 
           {/* Interactive Eligibility Input Fields */}
-          <div className="glass-panel p-6 border border-purple-500/10 text-left space-y-4">
+          <div className="glass-panel p-6 border border-white/5 text-left space-y-4">
             <div>
               <h4 className="text-base font-black text-slate-100">
                 {lang === "en" ? "Welfare Scheme Eligibility Checker" : "పథకాల అర్హత తనిఖీ వ్యవస్థ"}
@@ -631,7 +632,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
                       setEligibilityForm((prev) => ({ ...prev, [key]: event.target.value }))
                     }
                     placeholder={label}
-                    className="rounded-xl border border-white/5 bg-slate-950/70 px-4 py-3 text-xs text-slate-100 outline-none focus:border-purple-500/40"
+                    className="rounded-xl border border-white/5 bg-slate-950/70 px-4 py-3 text-xs text-slate-100 outline-none focus:border-emerald-500/40"
                   />
                 </div>
               ))}
@@ -639,7 +640,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
             <button
               onClick={runEligibilityCheck}
               disabled={eligibilityLoading}
-              className="px-6 py-3.5 rounded-xl bg-purple-650 hover:bg-purple-600 text-xs font-black text-white disabled:opacity-50 transition-colors cursor-pointer"
+              className="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-black text-white disabled:opacity-50 transition-colors cursor-pointer"
             >
               {eligibilityLoading
                 ? lang === "en" ? "Analyzing Profile..." : "పరిశీలిస్తోంది..."
@@ -710,7 +711,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
                     <p className="text-lg font-black text-white mt-1">{weatherResult.temperatureC}°C</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center">
-                    <CloudRain className="w-5 h-5 text-blue-400 mb-1" />
+                    <CloudRain className="w-5 h-5 text-teal-450 mb-1" />
                     <p className="text-[10px] text-slate-400 uppercase font-black">{lang === "en" ? "Rain" : "వర్షం అవకాశం"}</p>
                     <p className="text-lg font-black text-white mt-1">{weatherResult.rainProbability}%</p>
                   </div>
@@ -726,7 +727,7 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-100">
+                <div className="p-5 rounded-2xl bg-emerald-500/5 border border-white/5 text-emerald-100">
                   <div className="flex items-center gap-1.5 mb-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     <p className="text-xs font-black uppercase text-emerald-400 tracking-wider">

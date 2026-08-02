@@ -36,12 +36,12 @@ export default function OnboardingFlow() {
         className="w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-950 p-6 md:p-8 shadow-2xl relative overflow-hidden"
       >
         {/* Glow effect */}
-        <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 blur-sm" />
+        <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 blur-sm" />
 
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-900 pb-4 mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-black tracking-widest text-blue-500 uppercase">Saarathi AI</span>
+            <span className="text-xs font-black tracking-widest text-emerald-500 uppercase">Saarathi AI</span>
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           </div>
           <div className="text-xs font-semibold text-slate-500">
@@ -75,7 +75,7 @@ export default function OnboardingFlow() {
                   onClick={() => updateSetting("language", "te")}
                   className={`flex items-center justify-between rounded-2xl border p-5 text-left transition-all ${
                     settings.language === "te"
-                      ? "border-blue-500 bg-blue-500/10 text-white shadow-lg shadow-blue-500/5"
+                      ? "border-emerald-500 bg-emerald-500/10 text-white shadow-lg shadow-emerald-500/5"
                       : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
                   }`}
                 >
@@ -83,14 +83,14 @@ export default function OnboardingFlow() {
                     <p className="text-lg font-black">తెలుగు</p>
                     <p className="text-xs text-slate-400 mt-1">Telugu voice response default</p>
                   </div>
-                  {settings.language === "te" && <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />}
+                  {settings.language === "te" && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
                 </button>
 
                 <button
                   onClick={() => updateSetting("language", "en")}
                   className={`flex items-center justify-between rounded-2xl border p-5 text-left transition-all ${
                     settings.language === "en"
-                      ? "border-blue-500 bg-blue-500/10 text-white shadow-lg shadow-blue-500/5"
+                      ? "border-emerald-500 bg-emerald-500/10 text-white shadow-lg shadow-emerald-500/5"
                       : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
                   }`}
                 >
@@ -98,13 +98,13 @@ export default function OnboardingFlow() {
                     <p className="text-lg font-black">English</p>
                     <p className="text-xs text-slate-400 mt-1">English voice response default</p>
                   </div>
-                  {settings.language === "en" && <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />}
+                  {settings.language === "en" && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
                 </button>
               </div>
 
               <button
                 onClick={() => setStep(2)}
-                className="w-full rounded-2xl bg-blue-600 hover:bg-blue-500 py-3.5 text-sm font-black text-white flex items-center justify-center gap-2 shadow-lg shadow-blue-600/15 cursor-pointer"
+                className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-500 py-3.5 text-sm font-black text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-650/10 cursor-pointer"
               >
                 <span>{lang === "en" ? "Continue" : "తదుపరి"}</span>
                 <ChevronRight className="w-4 h-4" />
@@ -138,7 +138,7 @@ export default function OnboardingFlow() {
                     onClick={() => updateSetting("state", "Telangana")}
                     className={`rounded-2xl border p-4 text-center font-bold text-sm transition-all ${
                       settings.state === "Telangana"
-                        ? "border-sky-500 bg-sky-500/10 text-white"
+                        ? "border-emerald-500 bg-emerald-500/10 text-white"
                         : "border-slate-800 bg-slate-900/40 text-slate-400"
                     }`}
                   >
@@ -148,7 +148,7 @@ export default function OnboardingFlow() {
                     onClick={() => updateSetting("state", "Andhra Pradesh")}
                     className={`rounded-2xl border p-4 text-center font-bold text-sm transition-all ${
                       settings.state === "Andhra Pradesh"
-                        ? "border-sky-500 bg-sky-500/10 text-white"
+                        ? "border-emerald-500 bg-emerald-500/10 text-white"
                         : "border-slate-800 bg-slate-900/40 text-slate-400"
                     }`}
                   >
@@ -163,7 +163,7 @@ export default function OnboardingFlow() {
                   <select
                     value={settings.district || "Warangal"}
                     onChange={(event) => updateSetting("district", event.target.value)}
-                    className="w-full rounded-2xl border border-slate-850 bg-slate-900/70 px-4 py-3.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                    className="w-full rounded-2xl border border-slate-850 bg-slate-900/70 px-4 py-3.5 text-sm text-white focus:outline-none focus:border-emerald-500"
                   >
                     {settings.state === "Telangana" ? (
                       <>
@@ -204,7 +204,7 @@ export default function OnboardingFlow() {
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="w-2/3 rounded-2xl bg-blue-600 hover:bg-blue-500 py-3.5 text-sm font-black text-white flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-2/3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 py-3.5 text-sm font-black text-white flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>{lang === "en" ? "Continue" : "తదుపరి"}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -240,8 +240,8 @@ export default function OnboardingFlow() {
                       onClick={() => updateSetting("occupation", occ.id)}
                       className={`rounded-xl border p-3.5 text-left text-xs transition-all ${
                         settings.occupation === occ.id
-                          ? "border-blue-500 bg-blue-500/10 text-white"
-                          : "border-slate-850 bg-slate-900/40 text-slate-350 hover:border-slate-800"
+                          ? "border-emerald-500 bg-emerald-500/10 text-white"
+                          : "border-slate-850 bg-slate-900/40 text-slate-355 hover:border-slate-800"
                       }`}
                     >
                       <p className="font-bold">{lang === "en" ? occ.labelEn : occ.labelTe}</p>
@@ -266,7 +266,7 @@ export default function OnboardingFlow() {
                       value={settings.landOwnedAcres}
                       onChange={(event) => updateSetting("landOwnedAcres", Number(event.target.value))}
                       placeholder="e.g. 2.5"
-                      className="w-full rounded-2xl border border-slate-850 bg-slate-900/70 px-4 py-3.5 text-sm text-white focus:outline-none focus:border-blue-500"
+                      className="w-full rounded-2xl border border-slate-850 bg-slate-900/70 px-4 py-3.5 text-sm text-white focus:outline-none focus:border-emerald-500"
                     />
                   </motion.div>
                 )}

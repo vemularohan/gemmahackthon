@@ -285,8 +285,8 @@ export default function Home() {
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center lg:hidden">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center lg:hidden">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-450" />
                 </div>
                 <h1 className="text-sm font-black text-white lg:hidden">{t("brandName", lang)}</h1>
               </div>
@@ -302,13 +302,13 @@ export default function Home() {
               className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 border border-white/5 text-slate-200 text-xs font-bold flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
               title={lang === "te" ? "Switch to English" : "తెలుగులోకి మార్చండి"}
             >
-              <Globe className="w-4 h-4 text-sky-400" />
+              <Globe className="w-4 h-4 text-teal-400" />
               <span>{lang === "te" ? "English" : "తెలుగు"}</span>
             </button>
 
             <button
               onClick={() => setIsVoiceOpen(true)}
-              className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-blue-600/20 transition-all hover:scale-[1.02] cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-amber-500/10 transition-all hover:scale-[1.02] cursor-pointer"
             >
               <Mic className="w-4 h-4" />
               <span>{t("voiceAssistant", lang)}</span>

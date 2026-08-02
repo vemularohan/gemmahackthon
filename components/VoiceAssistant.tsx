@@ -186,9 +186,9 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
           }}
           transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
           className={`w-[400px] h-[400px] rounded-full blur-[100px] transition-colors duration-1000 ${
-            voiceStage === "listening" ? "bg-blue-600" :
+            voiceStage === "listening" ? "bg-emerald-600" :
             voiceStage === "thinking" ? "bg-amber-500" :
-            voiceStage === "speaking" ? "bg-emerald-500" : "bg-indigo-600"
+            voiceStage === "speaking" ? "bg-emerald-550" : "bg-teal-600"
           }`}
         />
         
@@ -215,8 +215,8 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
                   ease: "easeOut",
                 }}
                 className={`absolute w-3 h-3 rounded-full blur-[1px] ${
-                  voiceStage === "listening" ? "bg-blue-400/20" :
-                  voiceStage === "speaking" ? "bg-emerald-400/20" : "bg-amber-400/20"
+                  voiceStage === "listening" ? "bg-emerald-400/20" :
+                  voiceStage === "speaking" ? "bg-emerald-400/10" : "bg-amber-400/20"
                 }`}
                 style={{
                   left: "50%",
@@ -231,9 +231,9 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
       <div className="w-full max-w-2xl flex items-center justify-between py-2 z-10">
         <div className="flex items-center gap-2">
           <div className={`w-2.5 h-2.5 rounded-full transition-colors duration-500 ${
-            voiceStage === "listening" ? "bg-blue-500 animate-pulse" :
+            voiceStage === "listening" ? "bg-emerald-500 animate-pulse" :
             voiceStage === "thinking" ? "bg-amber-500 animate-bounce" :
-            voiceStage === "speaking" ? "bg-emerald-500 animate-pulse" : "bg-slate-600"
+            voiceStage === "speaking" ? "bg-emerald-400 animate-pulse" : "bg-slate-650"
           }`} />
           <span className="text-xs font-black text-slate-400 tracking-wider uppercase">
             {lang === "en" ? "Gemma Voice Pipeline" : "గెమ్మా వాయిస్ పైప్‌లైన్"}
@@ -370,7 +370,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
             className={`p-7 rounded-full transition-all shadow-xl hover:scale-[1.03] cursor-pointer ${
               isListening
                 ? "bg-red-600 text-white animate-pulse shadow-red-600/20"
-                : "bg-blue-600 text-white shadow-blue-600/20"
+                : "bg-emerald-600 text-white shadow-emerald-600/10"
             }`}
           >
             {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
@@ -387,7 +387,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
           <button
             onClick={() => setContinuousMode((prev) => !prev)}
             className={`rounded-xl border px-4 py-2 font-bold transition-colors cursor-pointer ${
-              continuousMode ? "border-blue-500 bg-blue-600/10 text-blue-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
+              continuousMode ? "border-emerald-500 bg-emerald-600/10 text-emerald-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
             }`}
           >
             {lang === "en" ? "Continuous Mode" : "కొనసాగింపు మోడ్"}
@@ -395,7 +395,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
           <button
             onClick={() => setWakeWordMode((prev) => !prev)}
             className={`rounded-xl border px-4 py-2 font-bold transition-colors cursor-pointer ${
-              wakeWordMode ? "border-blue-500 bg-blue-600/10 text-blue-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
+              wakeWordMode ? "border-emerald-500 bg-emerald-600/10 text-emerald-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
             }`}
           >
             {lang === "en" ? "Wake Word 'Saarathi'" : "వేక్ వర్డ్ 'సారథి'"}

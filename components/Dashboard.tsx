@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bookmark,
   BookmarkCheck,
@@ -13,6 +14,14 @@ import {
   Trash2,
   Upload,
   Wheat,
+  ArrowRight,
+  ShieldAlert,
+  Thermometer,
+  CloudRain,
+  Wind,
+  Droplets,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { authService, dbService } from "@/lib/firebase";
 import { emergencyContacts, findDistrictContext } from "@/lib/local/local-context";
@@ -44,21 +53,6 @@ interface WeatherResult {
   windSpeed: number;
   farmingAdvice: string;
 }
-
-const dashboardCards = (lang: "te" | "en") =>
-  lang === "en"
-    ? [
-        { title: "Agriculture", subtitle: "Crop, fertilizer, pest, disease, irrigation" },
-        { title: "Healthcare", subtitle: "Symptom guidance with emergency safeguards" },
-        { title: "Gov Schemes", subtitle: "Eligibility check + grounded scheme help" },
-        { title: "Weather", subtitle: "Rain/humidity/wind + farming advisory" },
-      ]
-    : [
-        { title: "వ్యవసాయం", subtitle: "పంటలు, ఎరువులు, పురుగులు, వ్యాధులు, నీరుపారుదల" },
-        { title: "ఆరోగ్యం", subtitle: "అత్యవసర హెచ్చరికలతో ఆరోగ్య మార్గదర్శనం" },
-        { title: "ప్రభుత్వ పథకాలు", subtitle: "అర్హత తనిఖీ + ధృవీకరించిన సమాచారం" },
-        { title: "వాతావరణం", subtitle: "వర్షం/ఆర్ద్రత/గాలి + వ్యవసాయ సలహా" },
-      ];
 
 export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("dashboard");
@@ -120,6 +114,23 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
     setBookmarks(savedBookmarks);
   };
 
+  const handlePlantUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setPlantMimeType(file.type);
+    setPlantResult(null);
+    setPlantError("");
+
+    const reader = new FileReader();
+    reader.onload = (fileEvent) => {
+      const value = fileEvent.target?.result;
+      if (typeof value === "string") {
+        setPlantImageBase64(value);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const analyzePlantImage = async () => {
     if (!plantImageBase64 || !plantMimeType) return;
     setPlantLoading(true);
@@ -146,23 +157,6 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
     } finally {
       setPlantLoading(false);
     }
-  };
-
-  const handlePlantUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setPlantMimeType(file.type);
-    setPlantResult(null);
-    setPlantError("");
-
-    const reader = new FileReader();
-    reader.onload = (fileEvent) => {
-      const value = fileEvent.target?.result;
-      if (typeof value === "string") {
-        setPlantImageBase64(value);
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   const runEligibilityCheck = async () => {
@@ -220,8 +214,9 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <nav className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-800/70 bg-slate-950/60 p-2 md:grid-cols-7">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 pb-10">
+      {/* Navigation Subheader Tabs */}
+      <nav className="flex flex-wrap gap-2 p-1.5 rounded-2xl bg-slate-900/60 border border-white/5 max-w-max mx-auto md:mx-0">
         {[
           { id: "dashboard", label: t("dashboard", lang), icon: Sparkles },
           { id: "agriculture", label: lang === "en" ? "Agriculture" : "వ్యవసాయం", icon: Wheat },
@@ -237,105 +232,189 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as DashboardTab)}
-              className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all cursor-pointer ${
                 isActive
-                  ? "border border-blue-500/40 bg-blue-500/15 text-blue-100"
-                  : "border border-transparent text-slate-300 hover:bg-slate-900/70"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/10"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
-              <Icon className="h-4 w-4" />
-              <span className="truncate">{tab.label}</span>
+              <Icon className="h-3.5 w-3.5" />
+              <span>{tab.label}</span>
             </button>
           );
         })}
       </nav>
 
+      {/* DASHBOARD GENERAL */}
       {activeTab === "dashboard" && (
-        <section className="space-y-6">
-          <div className="glass-panel rounded-3xl border border-slate-800/70 p-8">
-            <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-              <div className="max-w-2xl space-y-3">
-                <h2 className="text-2xl font-black tracking-tight text-slate-100 md:text-4xl">
-                  {lang === "en"
-                    ? "Saarathi AI Rural Companion"
-                    : "సారథి AI గ్రామీణ డిజిటల్ తోడు"}
-                </h2>
-                <p className="text-sm leading-relaxed text-slate-300">
-                  {lang === "en"
-                    ? "Voice-first bilingual assistance for agriculture, health, welfare schemes, and weather guidance."
-                    : "వ్యవసాయం, ఆరోగ్యం, ప్రభుత్వ పథకాలు, వాతావరణానికి వాయిస్-ఫస్ట్ ద్విభాషా సహాయం."}
+        <motion.section 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-8"
+        >
+          {/* Welcome Premium Box */}
+          <div className="glass-panel p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="space-y-2 max-w-xl text-left">
+              <h2 className="text-3xl font-black text-white leading-tight">
+                {lang === "en" ? "Saarathi AI Companion" : "సారథి AI డిజిటల్ తోడు"}
+              </h2>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                {lang === "en"
+                  ? "Your voice-first assistant. Use the features below or speak to Saarathi directly using the voice trigger."
+                  : "మీ ద్విభాషా వాయిస్ సహాయకుడు. కింది విభాగాలు చూడండి లేదా నేరుగా మాట్లాడటానికి మైక్రోఫోన్ నొక్కండి."}
+              </p>
+            </div>
+            <button
+              onClick={onLaunchVoiceMode}
+              className="px-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-sm font-black text-white flex items-center gap-2 shadow-lg shadow-blue-600/10 transition-all hover:scale-[1.02] cursor-pointer shrink-0"
+            >
+              <Mic className="h-4 w-4 text-white" />
+              <span>{t("voiceAssistant", lang)}</span>
+            </button>
+          </div>
+
+          {/* Premium Feature Split Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Agriculture module preview */}
+            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-emerald-500/20 group">
+              <div>
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 w-11 h-11 flex items-center justify-center mb-4">
+                  <Wheat className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-black text-slate-100">{lang === "en" ? "Agriculture Hub" : "వ్యవసాయ కేంద్రం"}</h3>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  {lang === "en" ? "Pest and crop disease warnings, market rates, and fertilizer calculations." : "ఆకు వ్యాధులు, నివారణ చికిత్సలు మరియు వ్యవసాయ సలహాల సమాచారం."}
                 </p>
               </div>
               <button
-                onClick={onLaunchVoiceMode}
-                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-blue-500"
+                onClick={() => setActiveTab("agriculture")}
+                className="mt-6 text-xs font-bold text-emerald-400 flex items-center gap-1 group-hover:text-emerald-350 cursor-pointer"
               >
-                <Mic className="h-4 w-4" />
-                {t("voiceAssistant", lang)}
+                <span>{lang === "en" ? "Open Module" : "విభాగం తెరవండి"}</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            {/* Healthcare module preview */}
+            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-cyan-500/20 group">
+              <div>
+                <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 w-11 h-11 flex items-center justify-center mb-4">
+                  <HeartPulse className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-black text-slate-100">{lang === "en" ? "Healthcare Advice" : "ఆరోగ్య సహాయం"}</h3>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  {lang === "en" ? "Grounded diagnostic advice, emergency numbers, and regional hospital locators." : "ఆరోగ్య లక్షణాల మార్గదర్శకత్వం, అత్యవసర కాంటాక్టులు మరియు ఆసుపత్రి సిఫార్సులు."}
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab("health")}
+                className="mt-6 text-xs font-bold text-cyan-400 flex items-center gap-1 group-hover:text-cyan-350 cursor-pointer"
+              >
+                <span>{lang === "en" ? "Open Module" : "విభాగం తెరవండి"}</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            {/* Government welfare schemes preview */}
+            <div className="glass-panel p-6 flex flex-col justify-between items-start hover:border-purple-500/20 group">
+              <div>
+                <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 w-11 h-11 flex items-center justify-center mb-4">
+                  <Landmark className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-black text-slate-100">{lang === "en" ? "Welfare Schemes" : "ప్రభుత్వ పథకాలు"}</h3>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                  {lang === "en" ? "Eligibility check for PM Kisan, pension eligibility, and MeeSeva certifications." : "పీఎం కిసాన్, పెన్షన్ల అర్హత తనిఖీ మరియు అవసరమైన సర్టిఫికెట్ల వివరాలు."}
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab("government")}
+                className="mt-6 text-xs font-bold text-purple-400 flex items-center gap-1 group-hover:text-purple-350 cursor-pointer"
+              >
+                <span>{lang === "en" ? "Open Module" : "విభాగం తెరవండి"}</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {dashboardCards(lang).map((card) => (
-              <div
-                key={card.title}
-                className="glass-panel rounded-2xl border border-slate-800/60 p-5"
-              >
-                <h3 className="text-base font-bold text-slate-100">{card.title}</h3>
-                <p className="mt-1 text-sm text-slate-300">{card.subtitle}</p>
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="glass-panel rounded-2xl border border-slate-800/60 p-5">
-              <h3 className="text-sm font-bold text-slate-100">
-                {lang === "en" ? "Emergency Contacts" : "అత్యవసర సంప్రదింపులు"}
-              </h3>
-              <div className="mt-3 space-y-1 text-sm text-slate-300">
-                <p>Ambulance: {emergencyContacts.ambulance}</p>
-                <p>Health: {emergencyContacts.healthHelpline}</p>
-                <p>Police: {emergencyContacts.police}</p>
-                <p>Women Helpline: {emergencyContacts.womenHelpline}</p>
+
+          {/* Quick Context & Utilities Panel */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Local emergency helpline details */}
+            <div className="glass-panel p-6 text-left">
+              <h3 className="text-base font-black text-slate-100 mb-4">{lang === "en" ? "Emergency Helplines" : "అత్యవసర హెల్ప్‌లైన్లు"}</h3>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">{lang === "en" ? "Ambulance" : "అంబులెన్స్"}</p>
+                  <p className="text-base font-black text-red-400 mt-1">{emergencyContacts.ambulance}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/10">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">{lang === "en" ? "Health Advice" : "ఆరోగ్య సలహా"}</p>
+                  <p className="text-base font-black text-orange-400 mt-1">{emergencyContacts.healthHelpline}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">{lang === "en" ? "Farmer Call Center" : "రైతు హెల్ప్‌లైన్"}</p>
+                  <p className="text-xs font-black text-blue-400 mt-1 truncate">{emergencyContacts.farmerCallCenter}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">{lang === "en" ? "Women Helpline" : "మహిళా రక్షణ"}</p>
+                  <p className="text-base font-black text-purple-400 mt-1">{emergencyContacts.womenHelpline}</p>
+                </div>
               </div>
             </div>
-            <div className="glass-panel rounded-2xl border border-slate-800/60 p-5">
-              <h3 className="text-sm font-bold text-slate-100">
-                {lang === "en" ? "District Utility Panel" : "జిల్లా ఉపయోగ ప్యానెల్"}
-              </h3>
-              {(() => {
-                const districtInfo = findDistrictContext(settings.district);
-                if (!districtInfo) {
+
+            {/* Hyper-local regional layers */}
+            <div className="glass-panel p-6 text-left flex flex-col justify-between">
+              <div>
+                <h3 className="text-base font-black text-slate-100 mb-2">{lang === "en" ? "District Utility Layer" : "జిల్లా సమాచార ప్యానెల్"}</h3>
+                {(() => {
+                  const info = findDistrictContext(settings.district);
+                  if (!info) {
+                    return (
+                      <p className="text-xs text-slate-400 mt-4 leading-relaxed">
+                        {lang === "en" ? "Go to Settings to configure your district and unlock local market predictions." : "స్థానిక పంటలు మరియు వాతావరణ సలహాల కోసం సెట్టింగ్స్ లో మీ జిల్లా ఎంచుకోండి."}
+                      </p>
+                    );
+                  }
                   return (
-                    <p className="mt-2 text-xs text-slate-300">
-                      {lang === "en"
-                        ? "Set your district in Settings to get local crop, MeeSeva, and hospital recommendations."
-                        : "స్థానిక పంటలు, MeeSeva, ఆసుపత్రి సిఫార్సుల కోసం Settings లో జిల్లా సెట్ చేయండి."}
-                    </p>
+                    <div className="space-y-2 mt-4 text-xs">
+                      <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                        <span className="text-slate-450">{lang === "en" ? "Selected District" : "ఎంచుకున్న జిల్లా"}</span>
+                        <span className="font-bold text-white">{info.district} ({info.state})</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                        <span className="text-slate-450">{lang === "en" ? "Primary Crops" : "ప్రధాన పంటలు"}</span>
+                        <span className="font-bold text-emerald-400">{info.primaryCrops.join(", ")}</span>
+                      </div>
+                      <p className="text-slate-350 mt-2 leading-relaxed bg-white/5 p-3 rounded-xl">
+                        {info.marketHint}
+                      </p>
+                    </div>
                   );
-                }
-                return (
-                  <div className="mt-2 space-y-2 text-xs text-slate-300">
-                    <p>
-                      <strong>{districtInfo.district}</strong> ({districtInfo.state})
-                    </p>
-                    <p>{districtInfo.marketHint}</p>
-                    <p>{districtInfo.meesevaHint}</p>
-                    <p>{districtInfo.hospitalHint}</p>
-                  </div>
-                );
-              })()}
+                })()}
+              </div>
             </div>
           </div>
-        </section>
+        </motion.section>
       )}
 
+      {/* AGRICULTURE HUB */}
       {activeTab === "agriculture" && (
-        <section className="space-y-5">
-          <div className="glass-panel rounded-3xl border border-slate-800/70 p-6">
-            <h3 className="text-lg font-bold text-slate-100">
-              {lang === "en" ? "Agriculture Assistant" : "వ్యవసాయ సహాయకుడు"}
-            </h3>
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <motion.section 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="glass-panel p-6 text-left space-y-4">
+            <div>
+              <span className="px-2.5 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-[10px] font-black uppercase text-emerald-400 tracking-wider">
+                {lang === "en" ? "Agriculture Assistant" : "వ్యవసాయ సహాయకుడు"}
+              </span>
+              <h3 className="text-xl font-black text-slate-100 mt-2">
+                {lang === "en" ? "Farming and Crop Advisories" : "వ్యవసాయ మరియు పంటల సలహాలు"}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
                 lang === "en" ? "Crop recommendation for current season" : "ప్రస్తుత సీజన్‌కు పంట సిఫార్సులు",
                 lang === "en" ? "Pest diagnosis and treatment" : "పురుగు నిర్ధారణ మరియు చికిత్స",
@@ -347,40 +426,38 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
                 <button
                   key={queryText}
                   onClick={() => onSelectQuery(queryText, "agriculture")}
-                  className="min-h-12 rounded-xl border border-slate-700/70 bg-slate-900/60 px-4 py-3 text-left text-sm text-slate-200 transition hover:bg-slate-800/70"
+                  className="rounded-xl border border-white/5 bg-slate-900/30 p-4 text-left text-xs font-bold text-slate-300 transition-all hover:bg-emerald-500/5 hover:border-emerald-500/20 cursor-pointer"
                 >
                   {queryText}
                 </button>
               ))}
             </div>
-            <div className="mt-4 space-y-3">
+
+            <div className="space-y-3 pt-2">
               <textarea
                 value={agriQuery}
                 onChange={(event) => setAgriQuery(event.target.value)}
-                className="h-28 w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500"
-                placeholder={
-                  lang === "en"
-                    ? "Ask custom agriculture question..."
-                    : "వ్యవసాయం గురించి మీ ప్రశ్న అడగండి..."
-                }
+                className="h-28 w-full rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-100 outline-none focus:border-emerald-500/40"
+                placeholder={lang === "en" ? "Ask custom agriculture question..." : "వ్యవసాయం గురించి మీ ప్రశ్న అడగండి..."}
               />
               <button
                 onClick={() => agriQuery.trim() && onSelectQuery(agriQuery, "agriculture")}
-                className="min-h-11 rounded-xl bg-white px-5 py-2.5 text-xs font-bold text-slate-950 transition hover:bg-slate-100"
+                className="px-6 py-3 rounded-xl bg-white text-xs font-black text-slate-950 transition hover:bg-slate-100 cursor-pointer"
               >
                 {t("submit", lang)}
               </button>
             </div>
           </div>
 
-          <div className="glass-panel rounded-3xl border border-emerald-600/20 p-6">
-            <h4 className="text-base font-bold text-slate-100">
-              {lang === "en" ? "Plant Disease Detection" : "మొక్కల వ్యాధి గుర్తింపు"}
+          {/* Plant Leaf OCR Vision Upload */}
+          <div className="glass-panel p-6 border border-emerald-500/10 text-left">
+            <h4 className="text-base font-black text-slate-100">
+              {lang === "en" ? "Crop Disease Vision Diagnosis" : "మొక్కల తెగుళ్ల విజువల్ గుర్తింపు"}
             </h4>
-            <p className="mt-1 text-xs text-slate-300">
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
               {lang === "en"
-                ? "Upload or capture a leaf image to get disease confidence, treatment, and preventive measures."
-                : "ఆకు చిత్రం అప్‌లోడ్ చేసి వ్యాధి నమ్మక స్థాయి, చికిత్స, నివారణ మార్గాలు పొందండి."}
+                ? "Upload or capture a leaf photo. Google Gemma will analyze and output disease metrics & remedies."
+                : "ఆకు చిత్రాన్ని అప్‌లోడ్ చేయండి. జెమ్మా వ్యాధి నిర్ధారణ, చికిత్స మరియు నివారణ మార్గాలను విశ్లేషిస్తుంది."}
             </p>
             <input
               ref={plantInputRef}
@@ -390,223 +467,307 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
               className="hidden"
               onChange={handlePlantUpload}
             />
-            <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => plantInputRef.current?.click()}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-100"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-slate-900/60 px-5 py-3 text-xs font-black text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <Upload className="h-4 w-4" />
-                {lang === "en" ? "Upload / Capture Leaf" : "ఆకు ఫోటో అప్‌లోడ్ / కెమెరా"}
+                <span>{lang === "en" ? "Upload / Capture Leaf" : "ఆకు ఫోటో అప్‌లోడ్ / కెమెరా"}</span>
               </button>
               <button
                 onClick={analyzePlantImage}
                 disabled={!plantImageBase64 || plantLoading}
-                className="min-h-11 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-50 transition-colors cursor-pointer"
               >
                 {plantLoading ? (lang === "en" ? "Analyzing..." : "విశ్లేషిస్తోంది...") : lang === "en" ? "Analyze Leaf" : "ఆకు విశ్లేషణ"}
               </button>
             </div>
+
             {plantImageBase64 && (
-              <div className="mt-4 max-w-xs overflow-hidden rounded-xl border border-slate-700">
-                <img src={plantImageBase64} alt="Plant leaf preview" className="h-auto w-full object-cover" />
+              <div className="mt-5 max-w-xs overflow-hidden rounded-2xl border border-white/10">
+                <img src={plantImageBase64} alt="Plant preview" className="h-auto w-full object-cover" />
               </div>
             )}
-            {plantError && <p className="mt-3 text-xs text-red-400">{plantError}</p>}
-            {plantResult && (
-              <div className="mt-4 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 text-sm text-slate-200">
-                <p>
-                  <strong>{lang === "en" ? "Disease" : "వ్యాధి"}:</strong> {plantResult.disease}
-                </p>
-                <p>
-                  <strong>{lang === "en" ? "Confidence" : "నమ్మక స్థాయి"}:</strong>{" "}
-                  {Math.round(plantResult.confidence * 100)}%
-                </p>
-                <p className="mt-2">
-                  <strong>{lang === "en" ? "Treatments" : "చికిత్సలు"}:</strong>
-                </p>
-                <ul className="list-disc pl-5">
-                  {plantResult.treatments.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-                <p className="mt-2">
-                  <strong>{lang === "en" ? "Preventive Measures" : "నివారణ చర్యలు"}:</strong>
-                </p>
-                <ul className="list-disc pl-5">
-                  {plantResult.preventiveMeasures.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-                <p className="mt-2 text-xs text-slate-300">{plantResult.teluguExplanation}</p>
-                <p className="mt-1 text-xs text-amber-300">{plantResult.disclaimer}</p>
-              </div>
-            )}
+
+            {plantError && <p className="mt-3 text-xs text-red-400 font-bold">{plantError}</p>}
+
+            <AnimatePresence>
+              {plantResult && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  className="mt-5 rounded-2xl border border-white/5 bg-slate-950/40 p-5 text-xs text-slate-300 space-y-3"
+                >
+                  <p className="text-sm">
+                    <strong className="text-white">{lang === "en" ? "Disease" : "వ్యాధి"}:</strong> <span className="font-bold text-emerald-400">{plantResult.disease}</span>
+                  </p>
+                  <p>
+                    <strong className="text-white">{lang === "en" ? "Confidence" : "నమ్మక స్థాయి"}:</strong> {Math.round(plantResult.confidence * 100)}%
+                  </p>
+                  
+                  <div className="space-y-1.5">
+                    <p className="font-bold text-white">{lang === "en" ? "Treatments" : "చికిత్స మార్గాలు"}:</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {plantResult.treatments.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <p className="font-bold text-white">{lang === "en" ? "Preventive Measures" : "నివారణ చర్యలు"}:</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {plantResult.preventiveMeasures.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <p className="text-slate-400 leading-relaxed mt-2 italic">{plantResult.teluguExplanation}</p>
+                  <p className="text-amber-400/80 text-[10px] bg-amber-500/5 border border-amber-500/10 p-2 rounded-xl">{plantResult.disclaimer}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </section>
+        </motion.section>
       )}
 
+      {/* HEALTH HUB */}
       {activeTab === "health" && (
-        <section className="glass-panel rounded-3xl border border-slate-800/70 p-6">
-          <h3 className="text-lg font-bold text-slate-100">{t("askHealth", lang)}</h3>
-          <p className="mt-2 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-            {lang === "en"
-              ? "Emergency warning is enabled. Serious symptoms are always redirected to doctors/hospitals."
-              : "అత్యవసర హెచ్చరిక అమల్లో ఉంది. తీవ్రమైన లక్షణాలకు ఎల్లప్పుడూ డాక్టర్/ఆసుపత్రి సూచన ఉంటుంది."}
-          </p>
+        <motion.section 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 text-left space-y-4"
+        >
+          <div>
+            <span className="px-2.5 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/5 text-[10px] font-black uppercase text-cyan-400 tracking-wider">
+              {lang === "en" ? "Healthcare Advice" : "ఆరోగ్య సహాయం"}
+            </span>
+            <h3 className="text-xl font-black text-slate-100 mt-2">{t("askHealth", lang)}</h3>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-2xl border border-amber-500/10 bg-amber-500/5 p-4 text-xs text-amber-300">
+            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              {lang === "en"
+                ? "Emergency warning is enabled. Serious symptoms are always redirected to doctors/hospitals. Disclaimers are included in all responses."
+                : "అత్యవసర హెచ్చరిక అమల్లో ఉంది. తీవ్రమైన ఆరోగ్య లక్షణాలకు ఎల్లప్పుడూ సమీప డాక్టర్/ఆసుపత్రి సిఫార్సు అందించబడుతుంది."}
+            </p>
+          </div>
+
           <textarea
             value={healthQuery}
             onChange={(event) => setHealthQuery(event.target.value)}
-            className="mt-4 h-28 w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500"
+            className="h-28 w-full rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-100 outline-none focus:border-cyan-500/40"
             placeholder={t("askHealthPlaceholder", lang)}
           />
           <button
             onClick={() => healthQuery.trim() && onSelectQuery(healthQuery, "health")}
-            className="mt-3 min-h-11 rounded-xl bg-white px-5 py-2.5 text-xs font-bold text-slate-950 transition hover:bg-slate-100"
+            className="px-6 py-3 rounded-xl bg-white text-xs font-black text-slate-950 transition hover:bg-slate-100 cursor-pointer"
           >
             {t("submit", lang)}
           </button>
-        </section>
+        </motion.section>
       )}
 
+      {/* GOVERNMENT WELFARE SCHEMES */}
       {activeTab === "government" && (
-        <section className="space-y-5">
-          <div className="glass-panel rounded-3xl border border-slate-800/70 p-6">
-            <h3 className="text-lg font-bold text-slate-100">
-              {lang === "en" ? "Government Scheme Assistant" : "ప్రభుత్వ పథకాల సహాయకుడు"}
-            </h3>
+        <motion.section 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="glass-panel p-6 text-left space-y-4">
+            <div>
+              <span className="px-2.5 py-1 rounded-full border border-purple-500/20 bg-purple-500/5 text-[10px] font-black uppercase text-purple-400 tracking-wider">
+                {lang === "en" ? "Welfare Schemes" : "ప్రభుత్వ పథకాలు"}
+              </span>
+              <h3 className="text-xl font-black text-slate-100 mt-2">
+                {lang === "en" ? "Government Scheme Assistant" : "ప్రభుత్వ పథకాల సహాయకుడు"}
+              </h3>
+            </div>
             <textarea
               value={govQuery}
               onChange={(event) => setGovQuery(event.target.value)}
-              className="mt-4 h-28 w-full rounded-2xl border border-slate-700/80 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500"
+              className="h-28 w-full rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-100 outline-none focus:border-purple-500/40"
               placeholder={t("askGovPlaceholder", lang)}
             />
             <button
               onClick={() => govQuery.trim() && onSelectQuery(govQuery, "government")}
-              className="mt-3 min-h-11 rounded-xl bg-white px-5 py-2.5 text-xs font-bold text-slate-950 transition hover:bg-slate-100"
+              className="px-6 py-3 rounded-xl bg-white text-xs font-black text-slate-950 transition hover:bg-slate-100 cursor-pointer"
             >
               {t("submit", lang)}
             </button>
           </div>
 
-          <div className="glass-panel rounded-3xl border border-blue-600/20 p-6">
-            <h4 className="text-base font-bold text-slate-100">
-              {lang === "en" ? "Eligibility Checker" : "అర్హత తనిఖీ"}
-            </h4>
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+          {/* Interactive Eligibility Input Fields */}
+          <div className="glass-panel p-6 border border-purple-500/10 text-left space-y-4">
+            <div>
+              <h4 className="text-base font-black text-slate-100">
+                {lang === "en" ? "Welfare Scheme Eligibility Checker" : "పథకాల అర్హత తనిఖీ వ్యవస్థ"}
+              </h4>
+              <p className="text-xs text-slate-400 mt-1">
+                {lang === "en" ? "Enter details to see PM-KISAN, pensions, or welfare benefits matches." : "మీ అర్హతలను కనుగొనడానికి వయస్సు, ఆదాయం వివరాలను నమోదు చేయండి."}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {(
                 [
                   ["age", lang === "en" ? "Age" : "వయస్సు"],
-                  ["occupation", lang === "en" ? "Occupation" : "వృత్తి"],
+                  ["occupation", lang === "en" ? "Occupation (e.g. Farmer)" : "వృత్తి (ఉదా: Farmer)"],
                   ["annualIncome", lang === "en" ? "Annual Income" : "వార్షిక ఆదాయం"],
                   ["district", lang === "en" ? "District" : "జిల్లా"],
                   ["landOwnedAcres", lang === "en" ? "Land owned (acres)" : "భూమి (ఎకరాలు)"],
                   ["gender", lang === "en" ? "Gender" : "లింగం"],
-                  ["category", lang === "en" ? "Category" : "వర్గం"],
+                  ["category", lang === "en" ? "Category (e.g. General, BC)" : "వర్గం (ఉదా: BC)"],
                 ] as const
               ).map(([key, label]) => (
-                <input
-                  key={key}
-                  value={eligibilityForm[key]}
-                  onChange={(event) =>
-                    setEligibilityForm((prev) => ({ ...prev, [key]: event.target.value }))
-                  }
-                  placeholder={label}
-                  className="min-h-11 rounded-xl border border-slate-700/80 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 outline-none focus:border-blue-500"
-                />
+                <div key={key} className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{label}</label>
+                  <input
+                    value={eligibilityForm[key]}
+                    onChange={(event) =>
+                      setEligibilityForm((prev) => ({ ...prev, [key]: event.target.value }))
+                    }
+                    placeholder={label}
+                    className="rounded-xl border border-white/5 bg-slate-950/70 px-4 py-3 text-xs text-slate-100 outline-none focus:border-purple-500/40"
+                  />
+                </div>
               ))}
             </div>
             <button
               onClick={runEligibilityCheck}
               disabled={eligibilityLoading}
-              className="mt-4 min-h-11 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+              className="px-6 py-3.5 rounded-xl bg-purple-650 hover:bg-purple-600 text-xs font-black text-white disabled:opacity-50 transition-colors cursor-pointer"
             >
               {eligibilityLoading
-                ? lang === "en"
-                  ? "Checking..."
-                  : "తనిఖీ చేస్తోంది..."
-                : lang === "en"
-                ? "Check Eligibility"
-                : "అర్హత తనిఖీ చేయండి"}
+                ? lang === "en" ? "Analyzing Profile..." : "పరిశీలిస్తోంది..."
+                : lang === "en" ? "Verify Scheme Eligibility" : "పథకాల అర్హత తనిఖీ చేయండి"}
             </button>
-            {eligibilityResult && (
-              <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-slate-700/70 bg-slate-900/70 p-4 text-xs text-slate-200">
-                {eligibilityResult}
-              </pre>
-            )}
+            <AnimatePresence>
+              {eligibilityResult && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  className="rounded-2xl border border-white/5 bg-slate-950/40 p-4"
+                >
+                  <pre className="text-xs text-slate-300 font-mono whitespace-pre-wrap leading-relaxed">
+                    {eligibilityResult}
+                  </pre>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </section>
+        </motion.section>
       )}
 
+      {/* WEATHER HUB */}
       {activeTab === "weather" && (
-        <section className="glass-panel rounded-3xl border border-slate-800/70 p-6">
-          <h3 className="text-lg font-bold text-slate-100">
-            {lang === "en" ? "Weather + Farming Advisory" : "వాతావరణం + వ్యవసాయ సలహా"}
-          </h3>
-          <div className="mt-4 flex flex-col gap-3 md:flex-row">
+        <motion.section 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 text-left space-y-4"
+        >
+          <div>
+            <span className="px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/5 text-[10px] font-black uppercase text-amber-400 tracking-wider">
+              {lang === "en" ? "Weather Advisory" : "వాతావరణ వ్యవసాయ సలహా"}
+            </span>
+            <h3 className="text-xl font-black text-slate-100 mt-2">
+              {lang === "en" ? "Live Weather Forecast" : "లైవ్ వాతావరణం మరియు సలహా"}
+            </h3>
+          </div>
+
+          <div className="flex flex-col gap-3 md:flex-row">
             <input
               value={weatherLocation}
               onChange={(event) => setWeatherLocation(event.target.value)}
               placeholder={lang === "en" ? "Enter village/district" : "గ్రామం/జిల్లా నమోదు చేయండి"}
-              className="min-h-11 w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-4 py-2 text-sm text-slate-100 outline-none focus:border-blue-500"
+              className="w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-slate-100 outline-none focus:border-amber-500/40"
             />
             <button
               onClick={loadWeather}
               disabled={weatherLoading}
-              className="min-h-11 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+              className="rounded-xl bg-amber-600 hover:bg-amber-500 px-6 py-3 text-xs font-black text-white disabled:opacity-50 transition-colors cursor-pointer shrink-0"
             >
-              {weatherLoading ? (lang === "en" ? "Loading..." : "లోడ్ అవుతోంది...") : lang === "en" ? "Get Weather" : "వాతావరణం పొందండి"}
+              {weatherLoading ? (lang === "en" ? "Loading..." : "లోడ్ అవుతోంది...") : lang === "en" ? "Get Forecast" : "వాతావరణం పొందండి"}
             </button>
           </div>
-          {weatherError && <p className="mt-3 text-xs text-red-400">{weatherError}</p>}
-          {weatherResult && (
-            <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-              <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-3">
-                <p className="text-[10px] text-slate-400">{lang === "en" ? "Temperature" : "ఉష్ణోగ్రత"}</p>
-                <p className="text-sm font-bold text-slate-100">{weatherResult.temperatureC}°C</p>
-              </div>
-              <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-3">
-                <p className="text-[10px] text-slate-400">{lang === "en" ? "Rain chance" : "వర్షం అవకాశం"}</p>
-                <p className="text-sm font-bold text-slate-100">{weatherResult.rainProbability}%</p>
-              </div>
-              <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-3">
-                <p className="text-[10px] text-slate-400">{lang === "en" ? "Humidity" : "ఆర్ద్రత"}</p>
-                <p className="text-sm font-bold text-slate-100">{weatherResult.humidity}%</p>
-              </div>
-              <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-3">
-                <p className="text-[10px] text-slate-400">{lang === "en" ? "Wind" : "గాలి వేగం"}</p>
-                <p className="text-sm font-bold text-slate-100">{weatherResult.windSpeed} km/h</p>
-              </div>
-              <div className="col-span-full rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-                <p className="mb-1 text-xs text-emerald-200">{weatherResult.place}</p>
-                {weatherResult.farmingAdvice}
-              </div>
-            </div>
-          )}
-        </section>
+
+          {weatherError && <p className="text-xs text-red-400 font-bold">{weatherError}</p>}
+
+          <AnimatePresence>
+            {weatherResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4 pt-2"
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center">
+                    <Thermometer className="w-5 h-5 text-amber-400 mb-1" />
+                    <p className="text-[10px] text-slate-400 uppercase font-black">{lang === "en" ? "Temp" : "ఉష్ణోగ్రత"}</p>
+                    <p className="text-lg font-black text-white mt-1">{weatherResult.temperatureC}°C</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center">
+                    <CloudRain className="w-5 h-5 text-blue-400 mb-1" />
+                    <p className="text-[10px] text-slate-400 uppercase font-black">{lang === "en" ? "Rain" : "వర్షం అవకాశం"}</p>
+                    <p className="text-lg font-black text-white mt-1">{weatherResult.rainProbability}%</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center">
+                    <Droplets className="w-5 h-5 text-teal-400 mb-1" />
+                    <p className="text-[10px] text-slate-400 uppercase font-black">{lang === "en" ? "Humidity" : "ఆర్ద్రత"}</p>
+                    <p className="text-lg font-black text-white mt-1">{weatherResult.humidity}%</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center">
+                    <Wind className="w-5 h-5 text-slate-300 mb-1" />
+                    <p className="text-[10px] text-slate-400 uppercase font-black">{lang === "en" ? "Wind" : "గాలి వేగం"}</p>
+                    <p className="text-lg font-black text-white mt-1">{weatherResult.windSpeed} km/h</p>
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-100">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <p className="text-xs font-black uppercase text-emerald-400 tracking-wider">
+                      {weatherResult.place} - {lang === "en" ? "Farming Advice" : "వ్యవసాయ సలహా"}
+                    </p>
+                  </div>
+                  <p className="text-xs leading-relaxed">{weatherResult.farmingAdvice}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
       )}
 
+      {/* BOOKMARKS MODULE */}
       {activeTab === "bookmarks" && (
-        <section className="glass-panel rounded-3xl border border-slate-800/70 p-6">
-          <h3 className="text-lg font-bold text-slate-100">{t("bookmarksTitle", lang)}</h3>
+        <motion.section 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 text-left space-y-4"
+        >
+          <h3 className="text-lg font-black text-slate-100">{t("bookmarksTitle", lang)}</h3>
           {bookmarks.length === 0 ? (
-            <p className="mt-6 text-sm text-slate-400">{t("noBookmarks", lang)}</p>
+            <p className="text-sm text-slate-400 py-6">{t("noBookmarks", lang)}</p>
           ) : (
-            <div className="mt-4 space-y-3">
-              {bookmarks.map((bookmarkItem) => (
+            <div className="space-y-3">
+              {bookmarks.map((item) => (
                 <div
-                  key={bookmarkItem.id}
-                  className="flex items-start justify-between gap-4 rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4"
+                  key={item.id}
+                  className="flex items-start justify-between gap-4 rounded-2xl border border-white/5 bg-slate-900/30 p-4"
                 >
-                  <div>
-                    <span className="inline-flex rounded-full border border-slate-600 px-2 py-1 text-[10px] uppercase text-slate-300">
-                      {bookmarkItem.type}
+                  <div className="space-y-1">
+                    <span className="inline-flex rounded-full border border-slate-700 px-2 py-0.5 text-[9px] font-black uppercase text-slate-400">
+                      {item.type}
                     </span>
-                    <h4 className="mt-2 text-sm font-bold text-slate-100">{bookmarkItem.title}</h4>
-                    <p className="mt-1 text-xs text-slate-300">{bookmarkItem.content}</p>
+                    <h4 className="text-sm font-bold text-slate-100 pt-1">{item.title}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">{item.content}</p>
                   </div>
                   <button
-                    onClick={() => handleDeleteBookmark(bookmarkItem.id)}
-                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-red-400"
+                    onClick={() => handleDeleteBookmark(item.id)}
+                    className="p-2 rounded-xl text-slate-450 hover:bg-slate-800 hover:text-red-400 cursor-pointer shrink-0 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -614,10 +775,18 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
               ))}
             </div>
           )}
-        </section>
+        </motion.section>
       )}
 
-      {activeTab === "settings" && <AccessibilitySettings />}
+      {/* SETTINGS MODULE */}
+      {activeTab === "settings" && (
+        <motion.section
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <AccessibilitySettings />
+        </motion.section>
+      )}
     </div>
   );
 }

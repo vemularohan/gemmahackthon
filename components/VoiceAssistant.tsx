@@ -178,7 +178,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-slate-950/98 backdrop-blur-xl p-6 text-white overflow-hidden">
       {/* Dynamic ambient orb matching agent status */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
         <motion.div 
           animate={{
             scale: voiceStage === "listening" ? [1, 1.3, 1] : voiceStage === "thinking" ? [1.1, 0.9, 1.1] : voiceStage === "speaking" ? [1.2, 1.4, 1.2] : 1,
@@ -191,6 +191,40 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
             voiceStage === "speaking" ? "bg-emerald-500" : "bg-indigo-600"
           }`}
         />
+        
+        {/* Particle bubbles */}
+        {voiceStage !== "idle" && (
+          <div className="absolute inset-0 w-full h-full">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{
+                  x: Math.random() * 800 - 400,
+                  y: 400,
+                  opacity: 0.1,
+                  scale: 0.5 + Math.random() * 0.5,
+                }}
+                animate={{
+                  y: -500,
+                  opacity: [0.1, 0.6, 0],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 4 + Math.random() * 4,
+                  delay: Math.random() * 2,
+                  ease: "easeOut",
+                }}
+                className={`absolute w-3 h-3 rounded-full blur-[1px] ${
+                  voiceStage === "listening" ? "bg-blue-400/20" :
+                  voiceStage === "speaking" ? "bg-emerald-400/20" : "bg-amber-400/20"
+                }`}
+                style={{
+                  left: "50%",
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Top Header */}

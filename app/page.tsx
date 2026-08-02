@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Sparkles, Mic, LogIn, Menu, X, ArrowLeft, Globe } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/components/Dashboard";
 import ChatInterface from "@/components/ChatInterface";
@@ -209,8 +210,8 @@ export default function Home() {
   }
 
   return (
-    <div className="relative flex h-screen w-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
-      {/* DESKTOP SIDEBAR: Hidden on mobile */}
+    <div className="relative flex h-screen w-screen overflow-hidden bg-[#070B14] text-white">
+      {/* DESKTOP SIDEBAR: Collapsible */}
       <div className="hidden lg:flex h-full shrink-0">
         <Sidebar
           user={user}
@@ -264,11 +265,11 @@ export default function Home() {
       {/* MAIN CONTENT AREA */}
       <div className="flex-grow flex flex-col h-full overflow-hidden relative">
         {/* Unified SaaS Header */}
-        <header className="h-16 border-b border-slate-900 bg-slate-950/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
+        <header className="h-16 border-b border-white/5 bg-slate-950/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-slate-300 cursor-pointer"
+              className="lg:hidden p-2 bg-slate-900 border border-white/5 hover:bg-slate-800 rounded-xl text-slate-300 cursor-pointer"
               aria-label="Open mobile menu"
             >
               <Menu className="w-5 h-5" />
@@ -277,7 +278,7 @@ export default function Home() {
             {activeChatId ? (
               <button
                 onClick={handleNewChat}
-                className="flex items-center gap-1.5 py-1.5 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-slate-200 cursor-pointer"
+                className="flex items-center gap-1.5 py-1.5 px-3 bg-slate-900 hover:bg-slate-800 border border-white/5 rounded-xl text-xs font-bold text-slate-200 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 {t("backToHome", lang)}
@@ -298,7 +299,7 @@ export default function Home() {
                 const nextLang = lang === "te" ? "en" : "te";
                 updateSetting("language", nextLang);
               }}
-              className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
+              className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 border border-white/5 text-slate-200 text-xs font-bold flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
               title={lang === "te" ? "Switch to English" : "తెలుగులోకి మార్చండి"}
             >
               <Globe className="w-4 h-4 text-sky-400" />
@@ -316,7 +317,7 @@ export default function Home() {
             {!user && (
               <button
                 onClick={() => setIsAuthOpen(true)}
-                className="py-2.5 px-3 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200 text-xs font-bold flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
+                className="py-2.5 px-3 bg-slate-900 border border-white/5 hover:bg-slate-850 text-slate-200 text-xs font-bold flex items-center gap-1.5 rounded-xl transition-colors cursor-pointer"
               >
                 <LogIn className="w-4 h-4" />
                 {t("login", lang)}
@@ -325,26 +326,42 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Main Panel Content */}
-        <div className="flex-grow overflow-hidden relative p-4 md:p-6 lg:p-8 flex flex-col">
-          {activeChatId ? (
-            <div className="flex-grow h-full overflow-hidden">
-              <ChatInterface
-                chatId={activeChatId}
-                initialMessages={activeChatMessages}
-                onSaveChat={handleSaveChat}
-                onLaunchVoiceMode={() => setIsVoiceOpen(true)}
-              />
-            </div>
-          ) : (
-            <div className="flex-grow overflow-y-auto scrollbar-thin pr-1">
-              <Dashboard
-                onSelectQuery={handleSelectQuery}
-                onNewChat={handleNewChat}
-                onLaunchVoiceMode={() => setIsVoiceOpen(true)}
-              />
-            </div>
-          )}
+        {/* Main Panel Content with Slide/Fade transitions */}
+        <div className="flex-grow overflow-hidden relative p-4 md:p-6 lg:p-8 flex flex-col bg-[#070B14]">
+          <AnimatePresence mode="wait">
+            {activeChatId ? (
+              <motion.div
+                key="chat"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="flex-grow h-full overflow-hidden"
+              >
+                <ChatInterface
+                  chatId={activeChatId}
+                  initialMessages={activeChatMessages}
+                  onSaveChat={handleSaveChat}
+                  onLaunchVoiceMode={() => setIsVoiceOpen(true)}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="dashboard"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="flex-grow overflow-y-auto scrollbar-thin pr-1"
+              >
+                <Dashboard
+                  onSelectQuery={handleSelectQuery}
+                  onNewChat={handleNewChat}
+                  onLaunchVoiceMode={() => setIsVoiceOpen(true)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

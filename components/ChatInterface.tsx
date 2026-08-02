@@ -14,6 +14,10 @@ import {
   RefreshCw,
   X,
   Sparkles,
+  User,
+  BrainCircuit,
+  MessageSquare,
+  HelpCircle
 } from "lucide-react";
 import { announceToScreenReader } from "@/utils/accessibility";
 import { useAccessibility } from "@/context/AccessibilityContext";
@@ -23,7 +27,7 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  image?: string; // Optional base64 image URL
+  image?: string;
 }
 
 interface ChatInterfaceProps {
@@ -33,55 +37,49 @@ interface ChatInterfaceProps {
   onLaunchVoiceMode: () => void;
 }
 
-// Custom simple markdown formatter to render formatted bold, italic, code blocks, bullet points, and headers
 function renderMarkdown(content: string) {
   if (!content) return null;
 
-  // Split by code blocks first
   const parts = content.split(/(```[\s\S]*?```)/g);
 
   return parts.map((part, index) => {
-    // If it's a code block
     if (part.startsWith("```") && part.endsWith("```")) {
       const code = part.slice(3, -3).replace(/^[a-zA-Z]+\n/, "");
       return (
-        <pre key={index} className="bg-slate-950 p-4 rounded-xl my-3 overflow-x-auto text-xs font-mono border border-slate-800 text-slate-300">
+        <pre key={index} className="bg-slate-950 p-4 rounded-3xl my-3 overflow-x-auto text-xs font-mono border border-white/5 text-slate-350">
           <code>{code}</code>
         </pre>
       );
     }
 
-    // Process inline elements like bold, lists, and newlines
     const lines = part.split("\n");
     return (
       <div key={index} className="space-y-2">
         {lines.map((line, lIdx) => {
           let cleanLine = line;
 
-          // Headers
           if (cleanLine.startsWith("### ")) {
             return (
-              <h4 key={lIdx} className="text-base font-bold text-slate-100 mt-3 mb-1">
+              <h4 key={lIdx} className="text-sm font-black text-slate-100 mt-4 mb-1 uppercase tracking-wider">
                 {parseInlineMarkdown(cleanLine.substring(4))}
               </h4>
             );
           }
           if (cleanLine.startsWith("## ")) {
             return (
-              <h3 key={lIdx} className="text-lg font-extrabold text-slate-100 mt-4 mb-2">
+              <h3 key={lIdx} className="text-base font-black text-slate-100 mt-5 mb-2">
                 {parseInlineMarkdown(cleanLine.substring(3))}
               </h3>
             );
           }
           if (cleanLine.startsWith("# ")) {
             return (
-              <h2 key={lIdx} className="text-xl font-black text-slate-100 mt-5 mb-2">
+              <h2 key={lIdx} className="text-lg font-black text-slate-100 mt-6 mb-2">
                 {parseInlineMarkdown(cleanLine.substring(2))}
               </h2>
             );
           }
 
-          // Bullet points
           if (cleanLine.startsWith("- ") || cleanLine.startsWith("* ")) {
             return (
               <ul key={lIdx} className="list-disc list-inside pl-3 space-y-1 text-slate-300">
@@ -90,7 +88,6 @@ function renderMarkdown(content: string) {
             );
           }
 
-          // Numbered lists
           if (/^\d+\.\s/.test(cleanLine)) {
             const dotIndex = cleanLine.indexOf(".");
             return (
@@ -100,11 +97,10 @@ function renderMarkdown(content: string) {
             );
           }
 
-          // Plain text line
           if (cleanLine.trim() === "") return <div key={lIdx} className="h-2" />;
 
           return (
-            <p key={lIdx} className="text-slate-300 leading-relaxed">
+            <p key={lIdx} className="text-slate-355 leading-relaxed text-sm">
               {parseInlineMarkdown(cleanLine)}
             </p>
           );
@@ -115,17 +111,15 @@ function renderMarkdown(content: string) {
 }
 
 function parseInlineMarkdown(text: string) {
-  // Regex to match bold **text**
   const parts = text.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <strong key={i} className="font-extrabold text-white">
+        <strong key={i} className="font-black text-white">
           {part.slice(2, -2)}
         </strong>
       );
     }
-    // Regex for italic *text*
     const italicParts = part.split(/(\*.*?\*)/g);
     return italicParts.map((subPart, j) => {
       if (subPart.startsWith("*") && subPart.endsWith("*")) {
@@ -150,38 +144,31 @@ export default function ChatInterface({
   const [imageMimeType, setImageMimeType] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showMemoryPanel, setShowMemoryPanel] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Setup TTS
   const { speak, stopSpeaking, isSpeaking } = useSpeech({
     speechRate: settings.speechRate,
     speechPitch: settings.speechPitch,
   });
   const [activeSpeechId, setActiveSpeechId] = useState<string | null>(null);
 
-  // Scroll to bottom on updates
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // Sync prop changes
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
 
-  // Setup STT in input bar
   const { isListening, startListening, stopListening } = useSpeech({
     onResult: (text) => {
-      if (text) {
-        setInputValue(text);
-      }
+      if (text) setInputValue(text);
     },
     onSpeechEnd: (text) => {
-      if (text) {
-        setInputValue(text);
-      }
+      if (text) setInputValue(text);
     },
   });
 
@@ -205,14 +192,12 @@ export default function ChatInterface({
     setImageFile(null);
     setImageMimeType(null);
     setLoading(true);
-    const lang = settings.language || "te";
     announceToScreenReader(t("srMessageSent", lang));
 
     try {
       let responseText = "";
       let assistantId = Math.random().toString(36).substring(7);
       if (userImage && userImageMime) {
-        // Image action
         const base64Clean = userImage.split(",")[1];
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -228,7 +213,6 @@ export default function ChatInterface({
         const data = await res.json();
         responseText = data.result || data.error;
       } else {
-        // Normal chat action with streaming response
         const chatHistory = updatedMessages.map((m) => ({
           role: m.role === "user" ? ("user" as const) : ("assistant" as const),
           content: m.content,
@@ -312,7 +296,6 @@ export default function ChatInterface({
       onSaveChat(finalMessages);
       announceToScreenReader(t("srResponseReceived", lang));
 
-      // Auto speak response if turned on
       if (settings.autoSpeak) {
         speak(responseText, lang);
         setActiveSpeechId(assistantId);
@@ -323,8 +306,8 @@ export default function ChatInterface({
         id: Math.random().toString(36).substring(7),
         role: "assistant",
         content: lang === "te"
-          ? "క్షమించండి, సర్వర్ లోపం కారణంగా సమాధానం ఇవ్వలేకపోయాను. దయచేసి మీ OpenRouter API Key సరిచూసుకోండి."
-          : "Sorry, I could not respond due to a server error. Please check your OpenRouter API Key.",
+          ? "క్షమించండి, సర్వర్ లోపం సంభవించింది. దయచేసి API Key సరిచూసుకోండి."
+          : "Sorry, a server error occurred. Please verify your OpenRouter API configuration.",
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -334,8 +317,6 @@ export default function ChatInterface({
 
   const handleRegenerate = async () => {
     if (messages.length < 2) return;
-    
-    // Find last user message
     let lastUserIndex = -1;
     for (let i = messages.length - 1; i >= 0; i--) {
       if (messages[i].role === "user") {
@@ -343,10 +324,8 @@ export default function ChatInterface({
         break;
       }
     }
-
     if (lastUserIndex === -1) return;
 
-    // Slice messages up to the last user message
     const history = messages.slice(0, lastUserIndex + 1);
     setMessages(history);
     setLoading(true);
@@ -357,7 +336,6 @@ export default function ChatInterface({
         content: m.content,
       }));
 
-      const lang = settings.language || "te";
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -402,7 +380,6 @@ export default function ChatInterface({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setImageMimeType(file.type);
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -414,23 +391,20 @@ export default function ChatInterface({
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
-    announceToScreenReader("సమాచారం కాపీ చేయబడింది.");
+    announceToScreenReader("Copied.");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleShare = async (text: string) => {
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: "Saarathi AI Response",
-          text: text,
-        });
-      } catch (err: any) {
-        console.warn("Share failed:", err?.message || err);
+        await navigator.share({ title: "Saarathi AI", text });
+      } catch (err) {
+        // Ignored
       }
     } else {
       navigator.clipboard.writeText(text);
-      alert("షేర్ చేయడానికి బదులుగా క్లిప్‌బోర్డ్‌కి కాపీ చేయబడింది!");
+      alert("Copied to clipboard instead!");
     }
   };
 
@@ -444,234 +418,309 @@ export default function ChatInterface({
     }
   };
 
+  const quickSuggestions = lang === "en" ? [
+    "Verify PM Kisan schemes",
+    "Pest diagnostics",
+    "Tomato leaf spots"
+  ] : [
+    "పీఎం కిసాన్ అర్హత",
+    "ఆకు తెగుళ్ల నివారణ",
+    "టొమాటో ఆకు మచ్చలు"
+  ];
+
   return (
-    <div className="flex flex-col h-full bg-slate-950/20 rounded-3xl border border-slate-900/60 overflow-hidden relative">
-      {/* Messages Window */}
-      <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-thin">
-        <div className="max-w-3xl mx-auto w-full space-y-6">
-          {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center py-20 px-6 space-y-6">
-              <div className="w-16 h-16 rounded-full bg-blue-600/10 border border-blue-500/20 flex items-center justify-center animate-pulse">
-                <Sparkles className="w-8 h-8 text-blue-400" />
-              </div>
-              <div className="max-w-md space-y-2">
-                <h3 className="text-xl font-bold text-slate-200">ఎలా సహాయం చేయగలను? (How can I help?)</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  మీరు మీ ప్రశ్నను కింద టైప్ చేయవచ్చు లేదా మైక్రోఫోన్ నొక్కి వాయిస్ ద్వారా అడగవచ్చు. ఇంగ్లీష్ లేదా తెలుగు పదాల కలయికతో కూడా అడగవచ్చు.
-                </p>
-              </div>
-            </div>
-          ) : (
-            messages.map((msg) => {
-              const isUser = msg.role === "user";
-              const isSpeechActive = activeSpeechId === msg.id && isSpeaking;
+    <div className="flex h-full w-full bg-slate-900/10 rounded-3xl border border-white/5 overflow-hidden relative">
+      
+      {/* Main Conversation Window */}
+      <div className="flex-grow flex flex-col min-w-0 h-full justify-between relative">
+        
+        {/* Memory Context Trigger */}
+        <div className="absolute top-4 right-4 z-10">
+          <button
+            onClick={() => setShowMemoryPanel(!showMemoryPanel)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/5 bg-slate-900/60 hover:bg-slate-800 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer transition-colors"
+          >
+            <BrainCircuit className="w-3.5 h-3.5 text-blue-400" />
+            <span>{lang === "en" ? "Gemma Memory" : "జెమ్మా మెమరీ"}</span>
+          </button>
+        </div>
 
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex gap-4 w-full ${
-                    isUser ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {/* Left Avatar for Assistant */}
-                  {!isUser && (
-                    <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center border bg-blue-600 border-blue-500 text-white">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                  )}
+        {/* Messages Scroll Area */}
+        <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-thin">
+          <div className="max-w-3xl mx-auto w-full space-y-6">
+            
+            {messages.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center py-20 px-6 space-y-6">
+                <div className="w-16 h-16 rounded-3xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center animate-pulse">
+                  <Sparkles className="w-7 h-7 text-blue-400" />
+                </div>
+                <div className="max-w-md space-y-2">
+                  <h3 className="text-xl font-black text-slate-100">
+                    {lang === "en" ? "How can I help you today?" : "నేను మీకు ఎలా సహాయం చేయగలను?"}
+                  </h3>
+                  <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                    {lang === "en" 
+                      ? "Ask questions about agriculture, government schemes, or health advisories in English or Telugu." 
+                      : "వ్యవసాయం, ప్రభుత్వ పథకాలు లేదా ఆరోగ్య నివారణల గురించి ఇంగ్లీష్ లేదా తెలుగులో అడగండి."}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              messages.map((msg) => {
+                const isUser = msg.role === "user";
+                const isSpeechActive = activeSpeechId === msg.id && isSpeaking;
 
-                  {/* Bubble / Text block */}
-                  <div className={`space-y-1 ${isUser ? "max-w-[80%]" : "flex-1"}`}>
-                    {isUser ? (
-                      // User bubble
-                      <div className="bg-zinc-800/80 border border-zinc-700/50 text-slate-100 px-4 py-2.5 rounded-[22px] shadow-sm text-sm break-words whitespace-pre-wrap">
-                        {msg.image && (
-                          <div className="mb-2 max-w-xs overflow-hidden rounded-xl border border-slate-700/50">
-                            <img src={msg.image} alt="Uploaded attachment" className="w-full h-auto object-cover" />
-                          </div>
-                        )}
-                        {msg.content}
-                      </div>
-                    ) : (
-                      // Assistant response (plain text like ChatGPT, no bubble background)
-                      <div className="text-slate-100 text-sm leading-relaxed font-normal break-words pt-1">
-                        {renderMarkdown(msg.content)}
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-4 w-full ${isUser ? "justify-end" : "justify-start"}`}
+                  >
+                    {/* Assistant Avatar */}
+                    {!isUser && (
+                      <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-blue-400 shadow-md">
+                        <Sparkles className="w-4 h-4" />
                       </div>
                     )}
 
-                    {/* Bubble Actions for Assistant */}
-                    {!isUser && (
-                      <div className="flex items-center gap-1 mt-1 text-slate-500">
-                        <button
-                          onClick={() => handleVoicePlay(msg.content, msg.id)}
-                          className={`p-1.5 rounded-lg hover:bg-slate-900 transition-colors cursor-pointer ${
-                            isSpeechActive ? "text-sky-400" : "hover:text-slate-350"
-                          }`}
-                          title={isSpeechActive ? "Stop voice" : "Read response"}
-                        >
-                          {isSpeechActive ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                        </button>
+                    {/* Chat Bubble content */}
+                    <div className={`space-y-1.5 ${isUser ? "max-w-[75%]" : "flex-1"}`}>
+                      {isUser ? (
+                        <div className="bg-blue-600 text-white px-5 py-3 rounded-3xl shadow-sm text-sm break-words whitespace-pre-wrap font-medium">
+                          {msg.image && (
+                            <div className="mb-2 max-w-xs overflow-hidden rounded-2xl border border-blue-500/30">
+                              <img src={msg.image} alt="Attachment" className="w-full h-auto object-cover" />
+                            </div>
+                          )}
+                          {msg.content}
+                        </div>
+                      ) : (
+                        <div className="text-slate-200 text-sm leading-relaxed break-words bg-slate-900/40 border border-white/5 p-5 rounded-3xl">
+                          {renderMarkdown(msg.content)}
+                          
+                          {/* Chat actions */}
+                          <div className="flex items-center gap-1 mt-4 pt-3 border-t border-white/5 text-slate-500">
+                            <button
+                              onClick={() => handleVoicePlay(msg.content, msg.id)}
+                              className={`p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer ${isSpeechActive ? "text-sky-400 bg-sky-500/5" : "hover:text-slate-300"}`}
+                            >
+                              {isSpeechActive ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                            </button>
+                            <button
+                              onClick={() => handleCopy(msg.content, msg.id)}
+                              className="p-2 rounded-xl hover:bg-slate-800 hover:text-slate-350 transition-colors cursor-pointer"
+                            >
+                              {copiedId === msg.id ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                            </button>
+                            <button
+                              onClick={() => handleShare(msg.content)}
+                              className="p-2 rounded-xl hover:bg-slate-800 hover:text-slate-350 transition-colors cursor-pointer"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-                        <button
-                          onClick={() => handleCopy(msg.content, msg.id)}
-                          className="p-1.5 rounded-lg hover:bg-slate-900 hover:text-slate-350 transition-colors cursor-pointer"
-                          title="Copy to clipboard"
-                        >
-                          {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                        </button>
-
-                        <button
-                          onClick={() => handleShare(msg.content)}
-                          className="p-1.5 rounded-lg hover:bg-slate-900 hover:text-slate-350 transition-colors cursor-pointer"
-                          title="Share response"
-                        >
-                          <Share2 className="w-3.5 h-3.5" />
-                        </button>
+                    {/* User Avatar */}
+                    {isUser && (
+                      <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-slate-400 shadow-md">
+                        <User className="w-4 h-4" />
                       </div>
                     )}
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
 
-          {/* Loading Indicator */}
-          {loading && (
-            <div className="flex gap-4 w-full justify-start">
-              <div className="w-8 h-8 rounded-full bg-blue-600 border border-blue-500 text-white flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 animate-spin" />
+            {/* Typing Indicator */}
+            {loading && (
+              <div className="flex gap-4 w-full justify-start">
+                <div className="w-8 h-8 rounded-xl border border-white/5 bg-slate-900 text-blue-400 flex items-center justify-center shrink-0 shadow-md">
+                  <Sparkles className="w-4 h-4 animate-spin" />
+                </div>
+                <div className="flex items-center gap-1 px-4 py-3 bg-slate-900/40 rounded-3xl border border-white/5">
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
+                </div>
               </div>
-              <div className="flex items-center gap-1 py-3 text-slate-400">
-                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" />
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Suggestion Chips */}
+        {messages.length === 0 && (
+          <div className="max-w-3xl mx-auto w-full px-4 mb-4 flex flex-wrap gap-2 justify-center">
+            {quickSuggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                onClick={() => {
+                  setInputValue(suggestion);
+                }}
+                className="text-xs bg-slate-900/40 border border-white/5 hover:border-blue-500/20 hover:bg-blue-500/5 px-4.5 py-2.5 rounded-full transition-all cursor-pointer text-slate-300 font-bold"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Attachment preview banner */}
+        {imageFile && (
+          <div className="max-w-3xl mx-auto w-full px-4 mb-2">
+            <div className="p-2 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5">
+                  <img src={imageFile} alt="Attached preview" className="w-full h-full object-cover" />
+                </div>
+                <span className="text-xs text-slate-400 font-bold">
+                  {lang === "en" ? "Image ready for upload" : "చిత్రం అప్‌లోడ్‌కు సిద్ధంగా ఉంది"}
+                </span>
               </div>
+              <button
+                onClick={() => {
+                  setImageFile(null);
+                  setImageMimeType(null);
+                }}
+                className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          )}
-          <div ref={messagesEndRef} />
+          </div>
+        )}
+
+        {/* Floating Input Area */}
+        <div className="p-4 bg-transparent border-t border-white/5">
+          <div className="max-w-3xl mx-auto w-full">
+            <div className="bg-slate-900/90 border border-white/5 rounded-[28px] p-2 flex items-center gap-2 shadow-xl backdrop-blur-md">
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="p-3 hover:bg-slate-850 text-slate-400 hover:text-white rounded-full transition-all cursor-pointer shrink-0"
+                title="Attach picture"
+              >
+                <ImageIcon className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={isListening ? stopListening : () => startListening(lang)}
+                className={`p-3 rounded-full transition-all cursor-pointer shrink-0 ${
+                  isListening
+                    ? "bg-red-950/80 text-red-400"
+                    : "text-slate-400 hover:bg-slate-850 hover:text-white"
+                }`}
+                title="Voice input"
+              >
+                <Mic className="w-5 h-5" />
+              </button>
+
+              <div className="flex-grow">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  placeholder={isListening 
+                    ? (lang === "en" ? "Listening..." : "వింటున్నాను...") 
+                    : t("chatPlaceholder", lang)}
+                  className="w-full py-2 bg-transparent text-slate-100 placeholder:text-slate-500 focus:outline-none text-sm font-medium"
+                />
+              </div>
+
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim() && !imageFile}
+                className={`p-3 rounded-full transition-all cursor-pointer shrink-0 ${
+                  inputValue.trim() || imageFile
+                    ? "bg-blue-600 text-white hover:bg-blue-500 shadow-md shadow-blue-600/10"
+                    : "text-slate-600 bg-slate-850/40 cursor-not-allowed"
+                }`}
+              >
+                <Send className="w-4.5 h-4.5" />
+              </button>
+
+              <div className="w-px h-6 bg-slate-800 hidden sm:block mx-1" />
+
+              <button
+                onClick={onLaunchVoiceMode}
+                className="hidden sm:flex items-center gap-1.5 px-4.5 py-2 bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600/20 text-blue-400 text-xs font-black rounded-full shadow-sm transition-all cursor-pointer shrink-0"
+              >
+                <Mic className="w-3.5 h-3.5" />
+                <span>{lang === "en" ? "Voice Live" : "వాయిస్ లైవ్"}</span>
+              </button>
+            </div>
+
+            {/* Footer disclaimers */}
+            <div className="mt-3 flex items-center justify-between text-[9px] text-slate-500 font-bold uppercase tracking-wider px-2">
+              <span>
+                {lang === "en" 
+                  ? "Saarathi AI. Grounded response system." 
+                  : "సారథి AI. ధృవీకరించిన సమాచారం."}
+              </span>
+              {messages.length > 0 && (
+                <button
+                  onClick={handleRegenerate}
+                  className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>{t("regenerate", lang)}</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Uploaded File Preview Banner */}
-      {imageFile && (
-        <div className="max-w-3xl mx-auto w-full px-4 mb-2">
-          <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-800">
-                <img src={imageFile} alt="Preview" className="w-full h-full object-cover" />
-              </div>
-              <span className="text-xs text-slate-400">
-                {settings.language === "en" ? "Image attached" : "చిత్రం జతచేయబడింది"}
+      {/* Gemma Memory & Regional Context Panel */}
+      {showMemoryPanel && (
+        <div className="w-80 border-l border-white/5 bg-slate-950/40 backdrop-blur-md p-6 flex flex-col justify-between shrink-0 h-full">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
+                <BrainCircuit className="w-4.5 h-4.5" />
+                {lang === "en" ? "Gemma Memory Layer" : "జెమ్మా మెమరీ పొర"}
               </span>
+              <button 
+                onClick={() => setShowMemoryPanel(false)}
+                className="p-1 text-slate-500 hover:text-white rounded-lg hover:bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              onClick={() => {
-                setImageFile(null);
-                setImageMimeType(null);
-              }}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-lg transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
+
+            <div className="space-y-4 text-xs">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+                <p className="font-bold text-white text-[10px] uppercase tracking-wider">{lang === "en" ? "Region Profile" : "ప్రాంత ప్రొఫైల్"}</p>
+                <p className="text-slate-400">{lang === "en" ? "State" : "రాష్ట్రం"}: <span className="text-white font-semibold">{settings.state}</span></p>
+                <p className="text-slate-400">{lang === "en" ? "District" : "జిల్లా"}: <span className="text-white font-semibold">{settings.district}</span></p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+                <p className="font-bold text-white text-[10px] uppercase tracking-wider">{lang === "en" ? "Farmer Context" : "వ్యవసాయ వివరాలు"}</p>
+                <p className="text-slate-400">{lang === "en" ? "Occupation" : "వృత్తి"}: <span className="text-white font-semibold">{settings.occupation || "Guest"}</span></p>
+                {settings.occupation === "farmer" && (
+                  <p className="text-slate-400">{lang === "en" ? "Land" : "భూమి"}: <span className="text-white font-semibold">{settings.landOwnedAcres} Acres</span></p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-[10px] text-slate-500 leading-relaxed font-bold bg-white/5 p-4 rounded-2xl">
+            {lang === "en" 
+              ? "Memory layers are dynamically injected into Gemma model prompts during orchestration."
+              : "ఈ ప్రొఫైల్ వివరాలు సమాధానం సిద్ధం చేయడానికి జెమ్మా మోడల్‌కు అందించబడతాయి."}
           </div>
         </div>
       )}
-
-      {/* ChatGPT Styled Pill Input controls */}
-      <div className="p-4 bg-transparent">
-        <div className="max-w-3xl mx-auto w-full">
-          <div className="bg-slate-900/90 border border-slate-850 rounded-[28px] p-2 flex items-center gap-2 shadow-lg backdrop-blur-md">
-            {/* File Upload button */}
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-2.5 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-full transition-all cursor-pointer"
-              title="Attach photo"
-              aria-label="Attach image"
-            >
-              <ImageIcon className="w-5 h-5" />
-            </button>
-
-            {/* Inline Speech Recognition */}
-            <button
-              onClick={isListening ? stopListening : () => startListening(lang)}
-              className={`p-2.5 rounded-full transition-all cursor-pointer ${
-                isListening
-                  ? "bg-red-950/80 text-red-400"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-              }`}
-              title="Talk to text"
-              aria-label={isListening ? "Stop listening" : "Start voice to text"}
-            >
-              <Mic className="w-5 h-5" />
-            </button>
-
-            {/* Text Input */}
-            <div className="relative flex-grow flex items-center">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder={isListening 
-                  ? (settings.language === "en" ? "Listening..." : "వింటున్నాను...") 
-                  : t("chatPlaceholder", settings.language || "te")}
-                className="w-full py-2 bg-transparent text-slate-100 placeholder:text-slate-500 focus:outline-none text-sm"
-              />
-            </div>
-
-            {/* Send Button */}
-            <button
-              onClick={handleSend}
-              disabled={!inputValue.trim() && !imageFile}
-              className={`p-2.5 rounded-full transition-all cursor-pointer ${
-                inputValue.trim() || imageFile
-                  ? "bg-blue-600 text-white hover:bg-blue-500"
-                  : "text-slate-650 bg-slate-800/40 cursor-not-allowed"
-              }`}
-              aria-label="Send message"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-
-            {/* Divider line for Mobile assistant */}
-            <div className="w-px h-6 bg-slate-800 hidden sm:block mx-1" />
-
-            {/* Voice Assistant Launcher */}
-            <button
-              onClick={onLaunchVoiceMode}
-              className="hidden sm:flex items-center gap-1 px-4 py-2 bg-blue-900/40 border border-blue-800/50 hover:bg-blue-900/60 text-blue-300 text-xs font-semibold rounded-full shadow-sm transition-all cursor-pointer shrink-0"
-            >
-              <Mic className="w-3.5 h-3.5" />
-              {t("voiceAssistant", settings.language || "te")}
-            </button>
-          </div>
-
-          {/* ChatGPT Style Small Disclaimer Footer */}
-          <div className="mt-2.5 flex items-center justify-between text-[10px] text-slate-500 font-normal px-2">
-            <span>
-              {settings.language === "en" 
-                ? "Sarathi AI may display inaccurate info. Verification is recommended." 
-                : "సారథి AI పొరపాట్లు చేయవచ్చు. ముఖ్యమైన సమాచారాన్ని ధృవీకరించుకోండి."}
-            </span>
-            {messages.length > 0 && (
-              <button
-                onClick={handleRegenerate}
-                className="flex items-center gap-1 hover:text-slate-400 transition-colors cursor-pointer"
-              >
-                <RefreshCw className="w-3 h-3" />
-                {t("regenerate", settings.language || "te")}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

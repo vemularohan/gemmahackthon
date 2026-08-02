@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0B0F19;
-  --foreground: #F8FAFC;
+  --background: #0b0f19;
+  --foreground: #f8fafc;
+  --surface: rgba(15, 23, 42, 0.7);
+  --surface-border: rgba(148, 163, 184, 0.15);
+}
+
+[data-theme="light"] {
+  --background: #f3f6fb;
+  --foreground: #0f172a;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-border: rgba(15, 23, 42, 0.12);
 }
 
 @theme inline {
@@ -54,10 +63,10 @@
 
 /* Glassmorphic Panel Styles */
 .glass-panel {
-  background: rgba(15, 22, 42, 0.45);
+  background: var(--surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--surface-border);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -100,11 +109,31 @@ body {
   position: relative;
 }
 
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.2) 0%,
+    rgba(148, 163, 184, 0.35) 50%,
+    rgba(148, 163, 184, 0.2) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+
 /* Dynamic glow animations */
 @keyframes pulseGlow {
   0%, 100% {
     opacity: 0.5;
     transform: scale(1);
+  }
+
+  @keyframes skeletonPulse {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
   50% {
     opacity: 0.8;

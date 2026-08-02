@@ -23,8 +23,6 @@ export const viewport: Viewport = {
   themeColor: "#0F172A",
   width: "device-width",
   initialScale: 1.0,
-  maximumScale: 1.0,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -34,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="te" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#0B0F19] text-slate-100 selection:bg-blue-600/30 selection:text-white">
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)] selection:bg-blue-600/30 selection:text-white">
         <div className="ambient-glow-1" />
         <div className="ambient-glow-2" />
         <AccessibilityProvider>

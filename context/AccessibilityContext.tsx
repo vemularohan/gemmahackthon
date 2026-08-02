@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { authService, dbService } from "@/lib/firebase";
 
 export type FontSize = "normal" | "large" | "xlarge";
+export type ThemeMode = "dark" | "light";
 
 export interface AccessibilitySettings {
   fontSize: FontSize;
@@ -11,6 +12,9 @@ export interface AccessibilitySettings {
   voiceNav: boolean;
   autoSpeak: boolean;
   language: "te" | "en";
+  theme: ThemeMode;
+  speechRate: number;
+  speechPitch: number;
 }
 
 interface AccessibilityContextProps {
@@ -25,6 +29,9 @@ const defaultSettings: AccessibilitySettings = {
   voiceNav: false,
   autoSpeak: true,
   language: "te",
+  theme: "dark",
+  speechRate: 1,
+  speechPitch: 1,
 };
 
 const AccessibilityContext = createContext<AccessibilityContextProps | undefined>(undefined);
@@ -77,6 +84,8 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     } else {
       root.classList.remove("high-contrast");
     }
+
+    root.setAttribute("data-theme", settings.theme);
   }, [settings]);
 
   const updateSetting = async <K extends keyof AccessibilitySettings>(

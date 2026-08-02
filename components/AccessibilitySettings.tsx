@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAccessibility, FontSize } from "@/context/AccessibilityContext";
-import { Eye, Type, Volume2, VolumeX, RefreshCw, Globe } from "lucide-react";
+import { Eye, Type, Volume2, VolumeX, RefreshCw, Globe, Moon, Sun } from "lucide-react";
 import { t } from "@/utils/translations";
 
 export default function AccessibilitySettingsComponent() {
@@ -157,6 +157,68 @@ export default function AccessibilitySettingsComponent() {
               ? t("voiceActive", lang)
               : t("voiceInactive", lang)}
           </span>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            {lang === "en" ? "Theme" : "థీమ్"}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                { id: "dark", icon: Moon, label: lang === "en" ? "Dark" : "డార్క్" },
+                { id: "light", icon: Sun, label: lang === "en" ? "Light" : "లైట్" },
+              ] as const
+            ).map((themeOption) => {
+              const Icon = themeOption.icon;
+              const isActive = settings.theme === themeOption.id;
+              return (
+                <button
+                  key={themeOption.id}
+                  onClick={() => updateSetting("theme", themeOption.id)}
+                  className={`py-3 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    isActive
+                      ? "bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-500/20"
+                      : "bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700"
+                  }`}
+                  aria-pressed={isActive}
+                >
+                  <Icon className="w-4 h-4" />
+                  {themeOption.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-300">
+            {lang === "en" ? "Speech Speed" : "వాయిస్ వేగం"} ({settings.speechRate.toFixed(1)}x)
+          </label>
+          <input
+            type="range"
+            min={0.6}
+            max={1.4}
+            step={0.1}
+            value={settings.speechRate}
+            onChange={(event) => updateSetting("speechRate", Number(event.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-300">
+            {lang === "en" ? "Speech Pitch" : "వాయిస్ పిచ్"} ({settings.speechPitch.toFixed(1)})
+          </label>
+          <input
+            type="range"
+            min={0.8}
+            max={1.2}
+            step={0.1}
+            value={settings.speechPitch}
+            onChange={(event) => updateSetting("speechPitch", Number(event.target.value))}
+            className="w-full"
+          />
         </div>
       </div>
     </div>

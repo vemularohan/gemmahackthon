@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Saarathi AI
 
-## Getting Started
+Saarathi AI is a voice-first bilingual (Telugu + English) assistant for rural users, built with Next.js App Router and Gemma via OpenRouter.
 
-First, run the development server:
+## Core Features
+
+- Voice-first interaction (STT + TTS)
+- Grounded RAG responses for agriculture, government, and healthcare
+- Agriculture module with plant disease image analysis
+- Government scheme eligibility checker
+- Weather advisory API integration with farming guidance
+- Accessible UI with large controls, dark/light theme, and speech settings
+- Chat history and bookmarks with Firebase + local fallback
+
+## Architecture
+
+### Frontend
+
+- `app/` – App Router pages and API routes
+- `components/` – reusable UI (dashboard, chat, voice, auth, sidebar, settings)
+- `context/` – global accessibility/settings state
+- `hooks/` – speech hook and UI behaviors
+
+### Backend / Server
+
+- `app/api/chat/route.ts` – unified assistant API actions
+- `app/api/weather/route.ts` – weather and farming advisory API
+- `services/assistantService.ts` – grounded domain logic + eligibility + plant diagnosis orchestration
+- `services/weatherService.ts` – Open-Meteo geocoding and forecast logic
+- `lib/openrouter.ts` – LLM integration helpers
+- `lib/rag/` – vector retrieval + domain knowledge base
+- `types/assistant.ts` – shared assistant/domain types
+
+## RAG Flow
+
+1. User asks a domain question (agriculture/government/healthcare).
+2. Query is embedded using local hash-vectorization (`lib/rag/retriever.ts`).
+3. Top knowledge chunks are retrieved from `lib/rag/knowledge-base.ts`.
+4. Prompt is grounded with retrieved context and strict anti-hallucination constraints.
+5. Gemma response is returned with source list.
+
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and set:
+
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_MODEL`
+- `NEXT_PUBLIC_APP_NAME`
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+
+## Install & Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm run start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
+Deploy on Vercel (recommended) or any Node.js-compatible platform.
 
-To learn more about Next.js, take a look at the following resources:
+- Ensure all environment variables are configured.
+- For Firebase auth + Firestore, configure allowed origins and security rules.
+- Verify browser permissions for microphone and speech synthesis.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Future Modules (Ready to Extend)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Current structure is prepared to add:
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Education Assistant
+- Financial Assistant
+- Women’s Welfare Assistant
+- Livestock Assistant
+- Legal Assistant
+- Marketplace Assistant

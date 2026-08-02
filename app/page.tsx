@@ -167,7 +167,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0B0F19] text-slate-100 relative">
+    <div className="relative flex h-screen w-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
       {/* DESKTOP SIDEBAR: Hidden on mobile */}
       <div className="hidden lg:flex h-full shrink-0">
         <Sidebar

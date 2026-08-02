@@ -157,7 +157,10 @@ export default function ChatInterface({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Setup TTS
-  const { speak, stopSpeaking, isSpeaking } = useSpeech();
+  const { speak, stopSpeaking, isSpeaking } = useSpeech({
+    speechRate: settings.speechRate,
+    speechPitch: settings.speechPitch,
+  });
   const [activeSpeechId, setActiveSpeechId] = useState<string | null>(null);
 
   // Scroll to bottom on updates

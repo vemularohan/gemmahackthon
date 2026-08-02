@@ -41,6 +41,8 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
     speak,
     stopSpeaking,
   } = useSpeech({
+    speechRate: settings.speechRate,
+    speechPitch: settings.speechPitch,
     onResult: (text) => {
       if (text) {
         setStatusMessage(text);

@@ -3,9 +3,11 @@ import { useState, useEffect, useRef } from "react";
 export interface UseSpeechProps {
   onResult?: (transcript: string) => void;
   onSpeechEnd?: (finalTranscript: string) => void;
+  speechRate?: number;
+  speechPitch?: number;
 }
 
-export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
+export function useSpeech({ onResult, onSpeechEnd, speechRate = 1, speechPitch = 1 }: UseSpeechProps = {}) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -26,11 +28,18 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
   const onResultRef = useRef(onResult);
   const onSpeechEndRef = useRef(onSpeechEnd);
   const transcriptRef = useRef(transcript);
+  const speechRateRef = useRef(speechRate);
+  const speechPitchRef = useRef(speechPitch);
 
   useEffect(() => {
     onResultRef.current = onResult;
     onSpeechEndRef.current = onSpeechEnd;
   }, [onResult, onSpeechEnd]);
+
+  useEffect(() => {
+    speechRateRef.current = speechRate;
+    speechPitchRef.current = speechPitch;
+  }, [speechRate, speechPitch]);
 
   useEffect(() => {
     transcriptRef.current = transcript;
@@ -177,8 +186,9 @@ export function useSpeech({ onResult, onSpeechEnd }: UseSpeechProps = {}) {
     }
 
     // Set human voice parameters (moderate rate, natural pitch)
-    utterance.rate = targetLang === "te" ? 0.95 : 1.0; 
-    utterance.pitch = 1.0;
+    const rate = targetLang === "te" ? Math.max(0.6, speechRateRef.current - 0.05) : speechRateRef.current;
+    utterance.rate = rate;
+    utterance.pitch = speechPitchRef.current;
 
     utterance.onstart = () => {
       setIsSpeaking(true);

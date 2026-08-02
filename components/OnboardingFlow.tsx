@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useAccessibility } from "@/context/AccessibilityContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Globe, User, MapPin, Wheat, CheckCircle2, ChevronRight, HelpCircle } from "lucide-react";
-import { t } from "@/utils/translations";
+import { CheckCircle2, ChevronRight } from "lucide-react";
 
 export default function OnboardingFlow() {
   const { settings, updateSetting } = useAccessibility();
@@ -29,20 +28,20 @@ export default function OnboardingFlow() {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xl">
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-950 p-6 md:p-8 shadow-2xl relative overflow-hidden"
+        className="w-full max-w-2xl glass-panel p-8 md:p-10 shadow-2xl relative overflow-hidden"
       >
-        {/* Glow effect */}
-        <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 blur-sm" />
+        {/* Glow effect header bar */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 blur-xs" />
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-900 pb-4 mb-6">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black tracking-widest text-emerald-500 uppercase">Saarathi AI</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="flex items-center justify-between border-b border-white/5 pb-5 mb-6">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xs font-black tracking-widest text-emerald-450 uppercase">Saarathi OS Onboarding</span>
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           </div>
           <div className="text-xs font-semibold text-slate-500">
             {lang === "en" ? `Step ${step} of 3` : `దశ ${step} / 3`}
@@ -54,13 +53,13 @@ export default function OnboardingFlow() {
           {step === 1 && (
             <motion.div
               key="step1"
-              initial={{ x: 10, opacity: 0 }}
+              initial={{ x: 15, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -10, opacity: 0 }}
+              exit={{ x: -15, opacity: 0 }}
               className="space-y-6"
             >
               <div className="text-center md:text-left">
-                <h2 className="text-2xl font-black text-white">
+                <h2 className="text-2xl font-black text-white leading-tight">
                   {lang === "en" ? "Select your primary language" : "మీ ప్రాధాన్య భాషను ఎంచుకోండి"}
                 </h2>
                 <p className="text-sm text-slate-400 mt-2">
@@ -70,13 +69,13 @@ export default function OnboardingFlow() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <button
                   onClick={() => updateSetting("language", "te")}
-                  className={`flex items-center justify-between rounded-2xl border p-5 text-left transition-all ${
+                  className={`flex items-center justify-between rounded-2xl border p-6 text-left transition-all cursor-pointer ${
                     settings.language === "te"
-                      ? "border-emerald-500 bg-emerald-500/10 text-white shadow-lg shadow-emerald-500/5"
-                      : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-white shadow-lg shadow-emerald-500/5"
+                      : "border-white/5 bg-slate-900/40 text-slate-300 hover:border-white/10 hover:bg-slate-900/60"
                   }`}
                 >
                   <div>
@@ -88,10 +87,10 @@ export default function OnboardingFlow() {
 
                 <button
                   onClick={() => updateSetting("language", "en")}
-                  className={`flex items-center justify-between rounded-2xl border p-5 text-left transition-all ${
+                  className={`flex items-center justify-between rounded-2xl border p-6 text-left transition-all cursor-pointer ${
                     settings.language === "en"
-                      ? "border-emerald-500 bg-emerald-500/10 text-white shadow-lg shadow-emerald-500/5"
-                      : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-white shadow-lg shadow-emerald-500/5"
+                      : "border-white/5 bg-slate-900/40 text-slate-300 hover:border-white/10 hover:bg-slate-900/60"
                   }`}
                 >
                   <div>
@@ -104,7 +103,7 @@ export default function OnboardingFlow() {
 
               <button
                 onClick={() => setStep(2)}
-                className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-500 py-3.5 text-sm font-black text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-650/10 cursor-pointer"
+                className="w-full rounded-2xl bg-gradient-to-r from-emerald-650 to-emerald-600 hover:from-emerald-600 hover:to-emerald-550 py-4 text-sm font-black text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-650/10 cursor-pointer border border-emerald-500/20"
               >
                 <span>{lang === "en" ? "Continue" : "తదుపరి"}</span>
                 <ChevronRight className="w-4 h-4" />
@@ -116,54 +115,54 @@ export default function OnboardingFlow() {
           {step === 2 && (
             <motion.div
               key="step2"
-              initial={{ x: 10, opacity: 0 }}
+              initial={{ x: 15, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -10, opacity: 0 }}
+              exit={{ x: -15, opacity: 0 }}
               className="space-y-6"
             >
               <div>
-                <h2 className="text-2xl font-black text-white">
+                <h2 className="text-2xl font-black text-white leading-tight">
                   {lang === "en" ? "Tell us where you live" : "మీ ప్రాంతాన్ని నమోదు చేయండి"}
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-slate-400 mt-1.5">
                   {lang === "en"
                     ? "This helps Saarathi provide hyper-local weather alerts, market rates, and welfare schemes."
                     : "ఇది మీకు సమీప వాతావరణ హెచ్చరికలు, మార్కెట్ ధరలు మరియు పథకాలను అందించడంలో సహాయపడుతుంది."}
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5 pt-2">
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => updateSetting("state", "Telangana")}
-                    className={`rounded-2xl border p-4 text-center font-bold text-sm transition-all ${
+                    className={`rounded-2xl border p-4.5 text-center font-bold text-sm transition-all cursor-pointer ${
                       settings.state === "Telangana"
-                        ? "border-emerald-500 bg-emerald-500/10 text-white"
-                        : "border-slate-800 bg-slate-900/40 text-slate-400"
+                        ? "border-emerald-500/40 bg-emerald-500/10 text-white"
+                        : "border-white/5 bg-slate-900/40 text-slate-400 hover:border-white/10"
                     }`}
                   >
                     Telangana
                   </button>
                   <button
                     onClick={() => updateSetting("state", "Andhra Pradesh")}
-                    className={`rounded-2xl border p-4 text-center font-bold text-sm transition-all ${
+                    className={`rounded-2xl border p-4.5 text-center font-bold text-sm transition-all cursor-pointer ${
                       settings.state === "Andhra Pradesh"
-                        ? "border-emerald-500 bg-emerald-500/10 text-white"
-                        : "border-slate-800 bg-slate-900/40 text-slate-400"
+                        ? "border-emerald-500/40 bg-emerald-500/10 text-white"
+                        : "border-white/5 bg-slate-900/40 text-slate-400 hover:border-white/10"
                     }`}
                   >
                     Andhra Pradesh
                   </button>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                <div className="space-y-2 text-left">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                     {lang === "en" ? "District" : "జిల్లా"}
                   </label>
                   <select
                     value={settings.district || "Warangal"}
                     onChange={(event) => updateSetting("district", event.target.value)}
-                    className="w-full rounded-2xl border border-slate-850 bg-slate-900/70 px-4 py-3.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full rounded-2xl border border-white/5 bg-slate-950/70 px-4 py-4 text-sm text-white focus:outline-none focus:border-emerald-500/40"
                   >
                     {settings.state === "Telangana" ? (
                       <>
@@ -198,13 +197,13 @@ export default function OnboardingFlow() {
               <div className="flex gap-4">
                 <button
                   onClick={() => setStep(1)}
-                  className="w-1/3 rounded-2xl border border-slate-800 hover:bg-slate-900 py-3.5 text-sm font-bold text-slate-300 cursor-pointer"
+                  className="w-1/3 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 py-4 text-sm font-bold text-slate-300 cursor-pointer transition-colors"
                 >
                   {lang === "en" ? "Back" : "వెనుకకు"}
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="w-2/3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 py-3.5 text-sm font-black text-white flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-2/3 rounded-2xl bg-gradient-to-r from-emerald-650 to-emerald-600 hover:from-emerald-600 hover:to-emerald-550 py-4 text-sm font-black text-white flex items-center justify-center gap-2 cursor-pointer border border-emerald-500/20"
                 >
                   <span>{lang === "en" ? "Continue" : "తదుపరి"}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -217,31 +216,31 @@ export default function OnboardingFlow() {
           {step === 3 && (
             <motion.div
               key="step3"
-              initial={{ x: 10, opacity: 0 }}
+              initial={{ x: 15, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               className="space-y-6"
             >
               <div>
-                <h2 className="text-2xl font-black text-white">
+                <h2 className="text-2xl font-black text-white leading-tight">
                   {lang === "en" ? "Select your occupation" : "మీ వృత్తిని ఎంచుకోండి"}
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-slate-400 mt-1.5">
                   {lang === "en"
                     ? "Choose your occupation and land holdings for customized farming support or schemes."
                     : "వ్యవసాయ మద్దతు మరియు పథకాల సలహాల కోసం మీ వృత్తి మరియు భూమిని నమోదు చేయండి."}
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2 max-h-[180px] overflow-y-auto pr-1">
+              <div className="space-y-5">
+                <div className="grid grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
                   {occupationsList.map((occ) => (
                     <button
                       key={occ.id}
                       onClick={() => updateSetting("occupation", occ.id)}
-                      className={`rounded-xl border p-3.5 text-left text-xs transition-all ${
+                      className={`rounded-2xl border p-4.5 text-left text-xs transition-all cursor-pointer ${
                         settings.occupation === occ.id
                           ? "border-emerald-500 bg-emerald-500/10 text-white"
-                          : "border-slate-850 bg-slate-900/40 text-slate-355 hover:border-slate-800"
+                          : "border-white/5 bg-slate-900/40 text-slate-300 hover:border-white/10 hover:bg-slate-900/60"
                       }`}
                     >
                       <p className="font-bold">{lang === "en" ? occ.labelEn : occ.labelTe}</p>
@@ -253,9 +252,9 @@ export default function OnboardingFlow() {
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
-                    className="space-y-2 pt-2"
+                    className="space-y-2 text-left pt-1"
                   >
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
                       {lang === "en" ? "Land Owned (Acres)" : "భూమి (ఎకరాలలో)"}
                     </label>
                     <input
@@ -266,7 +265,7 @@ export default function OnboardingFlow() {
                       value={settings.landOwnedAcres}
                       onChange={(event) => updateSetting("landOwnedAcres", Number(event.target.value))}
                       placeholder="e.g. 2.5"
-                      className="w-full rounded-2xl border border-slate-850 bg-slate-900/70 px-4 py-3.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full rounded-2xl border border-white/5 bg-slate-950/70 px-4 py-4 text-sm text-white focus:outline-none focus:border-emerald-500/40"
                     />
                   </motion.div>
                 )}
@@ -275,15 +274,14 @@ export default function OnboardingFlow() {
               <div className="flex gap-4">
                 <button
                   onClick={() => setStep(2)}
-                  className="w-1/3 rounded-2xl border border-slate-800 hover:bg-slate-900 py-3.5 text-sm font-bold text-slate-300 cursor-pointer"
+                  className="w-1/3 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 py-4 text-sm font-bold text-slate-300 cursor-pointer transition-colors"
                 >
                   {lang === "en" ? "Back" : "వెనుకకు"}
                 </button>
                 <button
                   onClick={handleFinishOnboarding}
-                  className="w-2/3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 py-3.5 text-sm font-black text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/15 cursor-pointer"
+                  className="w-2/3 rounded-2xl bg-gradient-to-r from-emerald-650 to-emerald-600 hover:from-emerald-600 hover:to-emerald-550 py-4 text-sm font-black text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/15 cursor-pointer border border-emerald-500/20"
                 >
-                  <CheckCircle2 className="w-5 h-5 text-emerald-350" />
                   <span>{lang === "en" ? "Get Started" : "సారథి ప్రారంభించండి"}</span>
                 </button>
               </div>

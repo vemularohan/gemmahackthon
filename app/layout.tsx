@@ -32,9 +32,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="te" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)] selection:bg-blue-600/30 selection:text-white">
-        <div className="ambient-glow-1" />
-        <div className="ambient-glow-2" />
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)] selection:bg-emerald-600/30 selection:text-white">
+        <div className="noise-overlay" />
+        <div className="ambient-glow-wrapper">
+          <div className="ambient-glow-orb orb-1" />
+          <div className="ambient-glow-orb orb-2" />
+          <div className="ambient-glow-orb orb-3" />
+        </div>
         <AccessibilityProvider>
           {children}
         </AccessibilityProvider>

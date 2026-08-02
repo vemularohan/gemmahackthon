@@ -15,9 +15,7 @@ import {
   X,
   Sparkles,
   User,
-  BrainCircuit,
-  MessageSquare,
-  HelpCircle
+  BrainCircuit
 } from "lucide-react";
 import { announceToScreenReader } from "@/utils/accessibility";
 import { useAccessibility } from "@/context/AccessibilityContext";
@@ -46,7 +44,7 @@ function renderMarkdown(content: string) {
     if (part.startsWith("```") && part.endsWith("```")) {
       const code = part.slice(3, -3).replace(/^[a-zA-Z]+\n/, "");
       return (
-        <pre key={index} className="bg-slate-950 p-4 rounded-3xl my-3 overflow-x-auto text-xs font-mono border border-white/5 text-slate-350">
+        <pre key={index} className="bg-slate-950/80 p-4.5 rounded-2xl my-3 overflow-x-auto text-xs font-mono border border-white/5 text-slate-350 shadow-inner">
           <code>{code}</code>
         </pre>
       );
@@ -60,21 +58,21 @@ function renderMarkdown(content: string) {
 
           if (cleanLine.startsWith("### ")) {
             return (
-              <h4 key={lIdx} className="text-sm font-black text-slate-100 mt-4 mb-1 uppercase tracking-wider">
+              <h4 key={lIdx} className="text-xs font-black text-slate-100 mt-4 mb-1.5 uppercase tracking-widest">
                 {parseInlineMarkdown(cleanLine.substring(4))}
               </h4>
             );
           }
           if (cleanLine.startsWith("## ")) {
             return (
-              <h3 key={lIdx} className="text-base font-black text-slate-100 mt-5 mb-2">
+              <h3 key={lIdx} className="text-sm font-black text-slate-100 mt-5 mb-2">
                 {parseInlineMarkdown(cleanLine.substring(3))}
               </h3>
             );
           }
           if (cleanLine.startsWith("# ")) {
             return (
-              <h2 key={lIdx} className="text-lg font-black text-slate-100 mt-6 mb-2">
+              <h2 key={lIdx} className="text-base font-black text-slate-100 mt-6 mb-2">
                 {parseInlineMarkdown(cleanLine.substring(2))}
               </h2>
             );
@@ -82,7 +80,7 @@ function renderMarkdown(content: string) {
 
           if (cleanLine.startsWith("- ") || cleanLine.startsWith("* ")) {
             return (
-              <ul key={lIdx} className="list-disc list-inside pl-3 space-y-1 text-slate-300">
+              <ul key={lIdx} className="list-disc list-inside pl-3 space-y-1 text-slate-300 font-semibold text-xs leading-relaxed">
                 <li>{parseInlineMarkdown(cleanLine.substring(2))}</li>
               </ul>
             );
@@ -91,7 +89,7 @@ function renderMarkdown(content: string) {
           if (/^\d+\.\s/.test(cleanLine)) {
             const dotIndex = cleanLine.indexOf(".");
             return (
-              <ol key={lIdx} className="list-decimal list-inside pl-3 space-y-1 text-slate-300">
+              <ol key={lIdx} className="list-decimal list-inside pl-3 space-y-1 text-slate-300 font-semibold text-xs leading-relaxed">
                 <li>{parseInlineMarkdown(cleanLine.substring(dotIndex + 1).trim())}</li>
               </ol>
             );
@@ -100,7 +98,7 @@ function renderMarkdown(content: string) {
           if (cleanLine.trim() === "") return <div key={lIdx} className="h-2" />;
 
           return (
-            <p key={lIdx} className="text-slate-355 leading-relaxed text-sm">
+            <p key={lIdx} className="text-slate-300 leading-relaxed text-xs font-semibold">
               {parseInlineMarkdown(cleanLine)}
             </p>
           );
@@ -429,7 +427,7 @@ export default function ChatInterface({
   ];
 
   return (
-    <div className="flex h-full w-full bg-slate-900/10 rounded-3xl border border-white/5 overflow-hidden relative">
+    <div className="flex h-full w-full bg-slate-950/20 rounded-[28px] border border-white/5 overflow-hidden relative backdrop-blur-xl">
       
       {/* Main Conversation Window */}
       <div className="flex-grow flex flex-col min-w-0 h-full justify-between relative">
@@ -438,27 +436,27 @@ export default function ChatInterface({
         <div className="absolute top-4 right-4 z-10">
           <button
             onClick={() => setShowMemoryPanel(!showMemoryPanel)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/5 bg-slate-900/60 hover:bg-slate-800 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/5 bg-slate-900/80 hover:bg-slate-800 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer transition-colors backdrop-blur-md shadow-md"
           >
-            <BrainCircuit className="w-3.5 h-3.5 text-emerald-450" />
+            <BrainCircuit className="w-3.5 h-3.5 text-emerald-450 animate-pulse" />
             <span>{lang === "en" ? "Gemma Memory" : "జెమ్మా మెమరీ"}</span>
           </button>
         </div>
 
         {/* Messages Scroll Area */}
         <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-thin">
-          <div className="max-w-3xl mx-auto w-full space-y-6">
+          <div className="max-w-3xl mx-auto w-full space-y-6 pt-10">
             
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center py-20 px-6 space-y-6">
-                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center animate-pulse">
+              <div className="h-full flex flex-col items-center justify-center text-center py-24 px-6 space-y-6">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center animate-pulse shadow-lg">
                   <Sparkles className="w-7 h-7 text-emerald-450" />
                 </div>
                 <div className="max-w-md space-y-2">
-                  <h3 className="text-xl font-black text-slate-100">
+                  <h3 className="text-xl font-black text-white">
                     {lang === "en" ? "How can I help you today?" : "నేను మీకు ఎలా సహాయం చేయగలను?"}
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                  <p className="text-xs text-slate-400 leading-relaxed font-semibold">
                     {lang === "en" 
                       ? "Ask questions about agriculture, government schemes, or health advisories in English or Telugu." 
                       : "వ్యవసాయం, ప్రభుత్వ పథకాలు లేదా ఆరోగ్య నివారణల గురించి ఇంగ్లీష్ లేదా తెలుగులో అడగండి."}
@@ -473,35 +471,35 @@ export default function ChatInterface({
                 return (
                   <div
                     key={msg.id}
-                    className={`flex gap-4 w-full ${isUser ? "justify-end" : "justify-start"}`}
+                    className={`flex gap-3.5 w-full ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     {/* Assistant Avatar */}
                     {!isUser && (
-                      <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-emerald-450 shadow-md">
-                        <Sparkles className="w-4 h-4" />
+                      <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-emerald-450 shadow-md">
+                        <Sparkles className="w-4.5 h-4.5" />
                       </div>
                     )}
 
                     {/* Chat Bubble content */}
-                    <div className={`space-y-1.5 ${isUser ? "max-w-[75%]" : "flex-1"}`}>
+                    <div className={`space-y-1.5 ${isUser ? "max-w-[78%]" : "flex-1"}`}>
                       {isUser ? (
-                        <div className="bg-emerald-600 text-white px-5 py-3 rounded-3xl shadow-sm text-sm break-words whitespace-pre-wrap font-medium">
+                        <div className="bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-md text-xs font-semibold leading-relaxed break-words whitespace-pre-wrap">
                           {msg.image && (
-                            <div className="mb-2 max-w-xs overflow-hidden rounded-2xl border border-white/5">
+                            <div className="mb-2.5 max-w-xs overflow-hidden rounded-xl border border-white/5 shadow-md">
                               <img src={msg.image} alt="Attachment" className="w-full h-auto object-cover" />
                             </div>
                           )}
                           {msg.content}
                         </div>
                       ) : (
-                        <div className="text-slate-200 text-sm leading-relaxed break-words bg-slate-900/40 border border-white/5 p-5 rounded-3xl">
+                        <div className="text-slate-200 text-xs leading-relaxed break-words bg-slate-900/40 border border-white/5 p-5 rounded-2xl shadow-sm">
                           {renderMarkdown(msg.content)}
                           
                           {/* Chat actions */}
-                          <div className="flex items-center gap-1 mt-4 pt-3 border-t border-white/5 text-slate-500">
+                          <div className="flex items-center gap-1 mt-4 pt-3.5 border-t border-white/5 text-slate-500">
                             <button
                               onClick={() => handleVoicePlay(msg.content, msg.id)}
-                              className={`p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer ${isSpeechActive ? "text-sky-400 bg-sky-500/5" : "hover:text-slate-300"}`}
+                              className={`p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer ${isSpeechActive ? "text-sky-400 bg-sky-500/5" : "hover:text-slate-350"}`}
                             >
                               {isSpeechActive ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                             </button>
@@ -524,8 +522,8 @@ export default function ChatInterface({
 
                     {/* User Avatar */}
                     {isUser && (
-                      <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-slate-400 shadow-md">
-                        <User className="w-4 h-4" />
+                      <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center border border-white/5 bg-slate-900 text-slate-400 shadow-md">
+                        <User className="w-4.5 h-4.5" />
                       </div>
                     )}
                   </div>
@@ -535,11 +533,11 @@ export default function ChatInterface({
 
             {/* Typing Indicator */}
             {loading && (
-              <div className="flex gap-4 w-full justify-start">
-                <div className="w-8 h-8 rounded-xl border border-white/5 bg-slate-900 text-emerald-450 flex items-center justify-center shrink-0 shadow-md">
-                  <Sparkles className="w-4 h-4 animate-spin" />
+              <div className="flex gap-3.5 w-full justify-start">
+                <div className="w-9 h-9 rounded-xl border border-white/5 bg-slate-900 text-emerald-450 flex items-center justify-center shrink-0 shadow-md">
+                  <Sparkles className="w-4.5 h-4.5 animate-spin" />
                 </div>
-                <div className="flex items-center gap-1 px-4 py-3 bg-slate-900/40 rounded-3xl border border-white/5">
+                <div className="flex items-center gap-1 px-4 py-3 bg-slate-900/40 rounded-2xl border border-white/5">
                   <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
                   <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
                   <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
@@ -552,14 +550,14 @@ export default function ChatInterface({
 
         {/* Suggestion Chips */}
         {messages.length === 0 && (
-          <div className="max-w-3xl mx-auto w-full px-4 mb-4 flex flex-wrap gap-2 justify-center">
+          <div className="max-w-3xl mx-auto w-full px-4 mb-4 flex flex-wrap gap-2.5 justify-center">
             {quickSuggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 onClick={() => {
                   setInputValue(suggestion);
                 }}
-                className="text-xs bg-slate-900/40 border border-white/5 hover:border-emerald-500/20 hover:bg-emerald-500/5 px-4.5 py-2.5 rounded-full transition-all cursor-pointer text-slate-300 font-bold"
+                className="text-xs bg-slate-900/60 border border-white/5 hover:border-emerald-500/20 hover:bg-emerald-500/5 px-4 py-2.5 rounded-full transition-all cursor-pointer text-slate-300 font-bold"
               >
                 {suggestion}
               </button>
@@ -570,8 +568,8 @@ export default function ChatInterface({
         {/* Attachment preview banner */}
         {imageFile && (
           <div className="max-w-3xl mx-auto w-full px-4 mb-2">
-            <div className="p-2 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="p-2.5 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-between shadow-md">
+              <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5">
                   <img src={imageFile} alt="Attached preview" className="w-full h-full object-cover" />
                 </div>
@@ -595,7 +593,7 @@ export default function ChatInterface({
         {/* Floating Input Area */}
         <div className="p-4 bg-transparent border-t border-white/5">
           <div className="max-w-3xl mx-auto w-full">
-            <div className="bg-slate-900/90 border border-white/5 rounded-[28px] p-2 flex items-center gap-2 shadow-xl backdrop-blur-md">
+            <div className="bg-slate-900/90 border border-white/5 rounded-[28px] p-2.5 flex items-center gap-2 shadow-xl backdrop-blur-md">
               <input
                 type="file"
                 accept="image/*"
@@ -605,7 +603,7 @@ export default function ChatInterface({
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-3 hover:bg-slate-850 text-slate-400 hover:text-white rounded-full transition-all cursor-pointer shrink-0"
+                className="p-3 hover:bg-slate-800 text-slate-400 hover:text-white rounded-full transition-all cursor-pointer shrink-0"
                 title="Attach picture"
               >
                 <ImageIcon className="w-5 h-5" />
@@ -616,7 +614,7 @@ export default function ChatInterface({
                 className={`p-3 rounded-full transition-all cursor-pointer shrink-0 ${
                   isListening
                     ? "bg-red-950/80 text-red-400"
-                    : "text-slate-400 hover:bg-slate-850 hover:text-white"
+                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
                 }`}
                 title="Voice input"
               >
@@ -632,28 +630,28 @@ export default function ChatInterface({
                   placeholder={isListening 
                     ? (lang === "en" ? "Listening..." : "వింటున్నాను...") 
                     : t("chatPlaceholder", lang)}
-                  className="w-full py-2 bg-transparent text-slate-100 placeholder:text-slate-500 focus:outline-none text-sm font-medium"
+                  className="w-full py-2 bg-transparent text-slate-150 placeholder:text-slate-650 focus:outline-none text-xs font-semibold"
                 />
               </div>
 
               <button
                 onClick={handleSend}
                 disabled={!inputValue.trim() && !imageFile}
-                className={`p-3 rounded-full transition-all cursor-pointer shrink-0 ${
+                className={`p-3.5 rounded-full transition-all cursor-pointer shrink-0 ${
                   inputValue.trim() || imageFile
-                    ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-md shadow-emerald-650/10"
-                    : "text-slate-600 bg-slate-850/40 cursor-not-allowed"
+                    ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-md"
+                    : "text-slate-600 bg-slate-800/40 cursor-not-allowed"
                 }`}
               >
                 <Send className="w-4.5 h-4.5" />
               </button>
 
-              <div className="w-px h-6 bg-slate-800 hidden sm:block mx-1" />
+              <div className="w-px h-6 bg-slate-800 hidden sm:block mx-1.5" />
 
               {/* Voice Assist Button is formatted in Amber */}
               <button
                 onClick={onLaunchVoiceMode}
-                className="hidden sm:flex items-center gap-1.5 px-4.5 py-2 bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/10 text-amber-400 text-xs font-black rounded-full shadow-sm transition-all cursor-pointer shrink-0"
+                className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500/5 border border-amber-500/15 hover:bg-amber-500/10 text-amber-450 text-xs font-black rounded-full shadow-sm transition-all cursor-pointer shrink-0"
               >
                 <Mic className="w-3.5 h-3.5" />
                 <span>{lang === "en" ? "Voice Live" : "వాయిస్ లైవ్"}</span>
@@ -670,7 +668,7 @@ export default function ChatInterface({
               {messages.length > 0 && (
                 <button
                   onClick={handleRegenerate}
-                  className="flex items-center gap-1 hover:text-slate-300 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 hover:text-slate-350 transition-colors cursor-pointer"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>{t("regenerate", lang)}</span>
@@ -687,25 +685,25 @@ export default function ChatInterface({
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-emerald-450 uppercase tracking-widest flex items-center gap-1.5">
-                <BrainCircuit className="w-4.5 h-4.5" />
+                <BrainCircuit className="w-4.5 h-4.5 animate-pulse" />
                 {lang === "en" ? "Gemma Memory Layer" : "జెమ్మా మెమరీ పొర"}
               </span>
               <button 
                 onClick={() => setShowMemoryPanel(false)}
-                className="p-1 text-slate-500 hover:text-white rounded-lg hover:bg-white/5 cursor-pointer"
+                className="p-1 text-slate-550 hover:text-white rounded-lg hover:bg-white/5 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+            <div className="space-y-4 text-xs font-semibold">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2.5">
                 <p className="font-bold text-white text-[10px] uppercase tracking-wider">{lang === "en" ? "Region Profile" : "ప్రాంత ప్రొఫైల్"}</p>
                 <p className="text-slate-400">{lang === "en" ? "State" : "రాష్ట్రం"}: <span className="text-white font-semibold">{settings.state}</span></p>
                 <p className="text-slate-400">{lang === "en" ? "District" : "జిల్లా"}: <span className="text-white font-semibold">{settings.district}</span></p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2.5">
                 <p className="font-bold text-white text-[10px] uppercase tracking-wider">{lang === "en" ? "Farmer Context" : "వ్యవసాయ వివరాలు"}</p>
                 <p className="text-slate-400">{lang === "en" ? "Occupation" : "వృత్తి"}: <span className="text-white font-semibold">{settings.occupation || "Guest"}</span></p>
                 {settings.occupation === "farmer" && (

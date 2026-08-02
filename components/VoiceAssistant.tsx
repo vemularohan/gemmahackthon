@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSpeech } from "@/hooks/useSpeech";
-import { Mic, MicOff, X, Volume2, VolumeX, AlertCircle, HelpCircle } from "lucide-react";
+import { Mic, MicOff, X, Volume2, VolumeX, AlertCircle } from "lucide-react";
 import { useAccessibility } from "@/context/AccessibilityContext";
 import { t } from "@/utils/translations";
 
@@ -22,8 +22,8 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
 
   const getInitialMessage = () => {
     return lang === "en" 
-      ? "Saarathi Voice is active. Tap mic or start speaking."
-      : "సారథి వాయిస్ సక్రియంగా ఉంది. మాట్లాడటానికి మైక్ నొక్కండి.";
+      ? "Saarathi Live Voice Mode is active. Talk now."
+      : "సారథి లైవ్ వాయిస్ మోడ్ సక్రియంగా ఉంది. మాట్లాడండి.";
   };
 
   const [statusMessage, setStatusMessage] = useState(getInitialMessage());
@@ -39,7 +39,6 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
     transcript,
     isSpeaking,
     speechSupported,
-    synthesisSupported,
     startListening,
     stopListening,
     speak,
@@ -80,7 +79,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
         }
       }
       
-      setStatusMessage(lang === "en" ? "Processing with Gemma..." : "జెమ్మా సహాయంతో సమాధానం సిద్ధం చేస్తున్నాను...");
+      setStatusMessage(lang === "en" ? "Thinking..." : "ఆలోచిస్తున్నాను...");
       setVoiceStage("thinking");
       
       try {
@@ -176,45 +175,46 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-slate-950/98 backdrop-blur-xl p-6 text-white overflow-hidden">
-      {/* Dynamic ambient orb matching agent status */}
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-slate-950/98 backdrop-blur-2xl p-6 text-white overflow-hidden">
+      
+      {/* Dynamic ambient orb matching agent status (Gemini Live style) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
         <motion.div 
           animate={{
             scale: voiceStage === "listening" ? [1, 1.3, 1] : voiceStage === "thinking" ? [1.1, 0.9, 1.1] : voiceStage === "speaking" ? [1.2, 1.4, 1.2] : 1,
-            opacity: voiceStage === "idle" ? 0.05 : 0.15,
+            opacity: voiceStage === "idle" ? 0.06 : 0.22,
           }}
-          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-          className={`w-[400px] h-[400px] rounded-full blur-[100px] transition-colors duration-1000 ${
+          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          className={`w-[450px] h-[450px] rounded-full blur-[110px] transition-colors duration-1000 ${
             voiceStage === "listening" ? "bg-emerald-600" :
             voiceStage === "thinking" ? "bg-amber-500" :
-            voiceStage === "speaking" ? "bg-emerald-550" : "bg-teal-600"
+            voiceStage === "speaking" ? "bg-emerald-500" : "bg-teal-600"
           }`}
         />
         
         {/* Particle bubbles */}
         {voiceStage !== "idle" && (
           <div className="absolute inset-0 w-full h-full">
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 10 }).map((_, i) => (
               <motion.div
                 key={i}
                 initial={{
                   x: Math.random() * 800 - 400,
-                  y: 400,
+                  y: 500,
                   opacity: 0.1,
                   scale: 0.5 + Math.random() * 0.5,
                 }}
                 animate={{
-                  y: -500,
-                  opacity: [0.1, 0.6, 0],
+                  y: -600,
+                  opacity: [0.1, 0.7, 0],
                 }}
                 transition={{
                   repeat: Infinity,
-                  duration: 4 + Math.random() * 4,
+                  duration: 5 + Math.random() * 5,
                   delay: Math.random() * 2,
                   ease: "easeOut",
                 }}
-                className={`absolute w-3 h-3 rounded-full blur-[1px] ${
+                className={`absolute w-3.5 h-3.5 rounded-full blur-[1px] ${
                   voiceStage === "listening" ? "bg-emerald-400/20" :
                   voiceStage === "speaking" ? "bg-emerald-400/10" : "bg-amber-400/20"
                 }`}
@@ -228,31 +228,31 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
       </div>
 
       {/* Top Header */}
-      <div className="w-full max-w-2xl flex items-center justify-between py-2 z-10">
-        <div className="flex items-center gap-2">
+      <div className="w-full max-w-2xl flex items-center justify-between py-4 z-10 relative">
+        <div className="flex items-center gap-2.5">
           <div className={`w-2.5 h-2.5 rounded-full transition-colors duration-500 ${
             voiceStage === "listening" ? "bg-emerald-500 animate-pulse" :
             voiceStage === "thinking" ? "bg-amber-500 animate-bounce" :
-            voiceStage === "speaking" ? "bg-emerald-400 animate-pulse" : "bg-slate-650"
+            voiceStage === "speaking" ? "bg-emerald-400 animate-pulse" : "bg-slate-700"
           }`} />
-          <span className="text-xs font-black text-slate-400 tracking-wider uppercase">
-            {lang === "en" ? "Gemma Voice Pipeline" : "గెమ్మా వాయిస్ పైప్‌లైన్"}
+          <span className="text-xs font-black text-slate-400 tracking-widest uppercase">
+            {lang === "en" ? "Gemma Voice Live Pipeline" : "గెమ్మా వాయిస్ పైప్‌లైన్"}
           </span>
         </div>
         <button
           onClick={onClose}
-          className="p-3 bg-slate-900/60 border border-slate-800 hover:bg-slate-850 rounded-full transition-all cursor-pointer"
+          className="p-3 bg-slate-900/60 border border-slate-800 hover:bg-slate-800 rounded-full transition-all cursor-pointer backdrop-blur-md"
           aria-label="Close voice assistant"
         >
-          <X className="w-5 h-5 text-slate-300" />
+          <X className="w-5 h-5 text-slate-350" />
         </button>
       </div>
 
       {/* Status Screen */}
-      <div className="flex-grow flex flex-col items-center justify-center max-w-xl text-center px-4 z-10">
+      <div className="flex-grow flex flex-col items-center justify-center max-w-xl text-center px-6 z-10 relative">
         {!speechSupported && (
-          <div className="flex items-center gap-2 p-3 mb-6 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2.5 p-3.5 mb-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+            <AlertCircle className="w-4.5 h-4.5 shrink-0" />
             <span>
               {lang === "en" 
                 ? "Voice recognition requires Google Chrome or Safari browser." 
@@ -268,8 +268,8 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3 }}
-            className={`font-medium leading-relaxed tracking-wide text-slate-100 max-h-[350px] overflow-y-auto px-4 ${
-              statusMessage.length > 80 ? "text-base md:text-lg text-slate-350" : "text-xl md:text-2xl"
+            className={`font-semibold leading-relaxed tracking-wide text-white max-h-[350px] overflow-y-auto px-4 ${
+              statusMessage.length > 80 ? "text-sm md:text-base text-slate-300" : "text-xl md:text-2xl"
             }`}
           >
             {statusMessage}
@@ -277,14 +277,14 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
         </AnimatePresence>
 
         {transcript && isListening && (
-          <p className="text-sm text-sky-400 mt-4 font-bold bg-sky-950/40 px-3 py-1 rounded-full border border-sky-900/40 animate-pulse">
+          <p className="text-xs text-emerald-450 mt-5 font-bold bg-emerald-950/40 px-4 py-1.5 rounded-full border border-emerald-900/40 animate-pulse shadow-sm">
             {lang === "en" ? `Hearing: "${transcript}"` : `వింటున్నది: "${transcript}"`}
           </p>
         )}
       </div>
 
       {/* Action Waveform & Controls */}
-      <div className="w-full max-w-md flex flex-col items-center gap-8 mb-8 z-10">
+      <div className="w-full max-w-md flex flex-col items-center gap-8 mb-8 z-10 relative">
         {/* Animated Fluid SVG Waves */}
         <div className="h-20 flex items-center justify-center w-full relative">
           <svg className="absolute w-full h-full inset-0" viewBox="0 0 200 60" fill="none">
@@ -294,7 +294,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
                   animate={{ d: ["M10,30 Q40,10 80,30 T150,30 T190,30", "M10,30 Q40,50 80,30 T150,30 T190,30", "M10,30 Q40,10 80,30 T150,30 T190,30"] }}
                   transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
                   d="M10,30 Q40,20 80,30 T150,30 T190,30"
-                  stroke="#3b82f6"
+                  stroke="#10b981"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -302,7 +302,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
                   animate={{ d: ["M10,30 Q30,50 90,30 T160,30 T190,30", "M10,30 Q30,10 90,30 T160,30 T190,30", "M10,30 Q30,50 90,30 T160,30 T190,30"] }}
                   transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
                   d="M10,30 Q30,40 90,30 T160,30 T190,30"
-                  stroke="#60a5fa"
+                  stroke="#14b8a6"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeDasharray="4 2"
@@ -323,7 +323,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
                   animate={{ d: ["M10,30 Q60,45 110,30 T190,30", "M10,30 Q60,15 110,30 T190,30", "M10,30 Q60,45 110,30 T190,30"] }}
                   transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
                   d="M10,30 Q60,35 110,30 T190,30"
-                  stroke="#34d399"
+                  stroke="#059669"
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
@@ -337,7 +337,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
               </div>
             )}
             {voiceStage === "idle" && (
-              <line x1="10" y1="30" x2="190" y2="30" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+              <line x1="10" y1="30" x2="190" y2="30" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
             )}
           </svg>
         </div>
@@ -364,21 +364,26 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
             <VolumeX className="w-5 h-5" />
           </button>
 
-          {/* Core Mic Button */}
-          <button
-            onClick={isListening ? stopListening : () => startListening(lang)}
-            className={`p-7 rounded-full transition-all shadow-xl hover:scale-[1.03] cursor-pointer ${
-              isListening
-                ? "bg-red-600 text-white animate-pulse shadow-red-600/20"
-                : "bg-emerald-600 text-white shadow-emerald-600/10"
-            }`}
-          >
-            {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
-          </button>
+          {/* Core Mic Button (Gemini Live style glass effect & ripples) */}
+          <div className="relative">
+            {isListening && (
+              <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-md animate-pulse pointer-events-none scale-110" />
+            )}
+            <button
+              onClick={isListening ? stopListening : () => startListening(lang)}
+              className={`p-8 rounded-full transition-all duration-300 hover:scale-105 cursor-pointer relative z-10 border border-white/10 ${
+                isListening
+                  ? "bg-red-650 text-white shadow-xl shadow-red-500/20"
+                  : "bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-xl shadow-emerald-500/20"
+              }`}
+            >
+              {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+            </button>
+          </div>
 
           {/* Quick auto-read indicator */}
-          <div className="p-4 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
-            <Volume2 className={`w-5 h-5 ${isSpeaking ? "text-emerald-400 animate-bounce" : ""}`} />
+          <div className="p-4 rounded-full bg-slate-900 border border-slate-800 text-slate-450">
+            <Volume2 className={`w-5 h-5 ${isSpeaking ? "text-emerald-450 animate-bounce" : ""}`} />
           </div>
         </div>
 
@@ -387,7 +392,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
           <button
             onClick={() => setContinuousMode((prev) => !prev)}
             className={`rounded-xl border px-4 py-2 font-bold transition-colors cursor-pointer ${
-              continuousMode ? "border-emerald-500 bg-emerald-600/10 text-emerald-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
+              continuousMode ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
             }`}
           >
             {lang === "en" ? "Continuous Mode" : "కొనసాగింపు మోడ్"}
@@ -395,7 +400,7 @@ export default function VoiceAssistant({ isOpen, onClose, onResponse }: VoiceAss
           <button
             onClick={() => setWakeWordMode((prev) => !prev)}
             className={`rounded-xl border px-4 py-2 font-bold transition-colors cursor-pointer ${
-              wakeWordMode ? "border-emerald-500 bg-emerald-600/10 text-emerald-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
+              wakeWordMode ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400" : "border-slate-800 bg-slate-900/60 text-slate-400"
             }`}
           >
             {lang === "en" ? "Wake Word 'Saarathi'" : "వేక్ వర్డ్ 'సారథి'"}

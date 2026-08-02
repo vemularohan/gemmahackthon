@@ -15,6 +15,7 @@ import {
   Wheat,
 } from "lucide-react";
 import { authService, dbService } from "@/lib/firebase";
+import { emergencyContacts, findDistrictContext } from "@/lib/local/local-context";
 import AccessibilitySettings from "@/components/AccessibilitySettings";
 import { useAccessibility } from "@/context/AccessibilityContext";
 import { t } from "@/utils/translations";
@@ -93,6 +94,12 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
     gender: "",
     category: "",
   });
+
+  useEffect(() => {
+    if (settings.district) {
+      setWeatherLocation(settings.district);
+    }
+  }, [settings.district]);
 
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChange((currentUser) => {
@@ -278,6 +285,46 @@ export default function Dashboard({ onSelectQuery, onLaunchVoiceMode }: Dashboar
                 <p className="mt-1 text-sm text-slate-300">{card.subtitle}</p>
               </div>
             ))}
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="glass-panel rounded-2xl border border-slate-800/60 p-5">
+              <h3 className="text-sm font-bold text-slate-100">
+                {lang === "en" ? "Emergency Contacts" : "అత్యవసర సంప్రదింపులు"}
+              </h3>
+              <div className="mt-3 space-y-1 text-sm text-slate-300">
+                <p>Ambulance: {emergencyContacts.ambulance}</p>
+                <p>Health: {emergencyContacts.healthHelpline}</p>
+                <p>Police: {emergencyContacts.police}</p>
+                <p>Women Helpline: {emergencyContacts.womenHelpline}</p>
+              </div>
+            </div>
+            <div className="glass-panel rounded-2xl border border-slate-800/60 p-5">
+              <h3 className="text-sm font-bold text-slate-100">
+                {lang === "en" ? "District Utility Panel" : "జిల్లా ఉపయోగ ప్యానెల్"}
+              </h3>
+              {(() => {
+                const districtInfo = findDistrictContext(settings.district);
+                if (!districtInfo) {
+                  return (
+                    <p className="mt-2 text-xs text-slate-300">
+                      {lang === "en"
+                        ? "Set your district in Settings to get local crop, MeeSeva, and hospital recommendations."
+                        : "స్థానిక పంటలు, MeeSeva, ఆసుపత్రి సిఫార్సుల కోసం Settings లో జిల్లా సెట్ చేయండి."}
+                    </p>
+                  );
+                }
+                return (
+                  <div className="mt-2 space-y-2 text-xs text-slate-300">
+                    <p>
+                      <strong>{districtInfo.district}</strong> ({districtInfo.state})
+                    </p>
+                    <p>{districtInfo.marketHint}</p>
+                    <p>{districtInfo.meesevaHint}</p>
+                    <p>{districtInfo.hospitalHint}</p>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </section>
       )}

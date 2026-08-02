@@ -17,7 +17,20 @@ Your answers should be easy enough for elderly users and people with low digital
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
-  content: string | any[];
+  content:
+    | string
+    | Array<
+        | { type: "text"; text: string }
+        | { type: "image_url"; image_url: { url: string } }
+      >;
+}
+
+export async function* streamTextChunks(textPromise: Promise<string>, chunkSize = 24) {
+  const text = await textPromise;
+  for (let index = 0; index < text.length; index += chunkSize) {
+    yield text.slice(index, index + chunkSize);
+    await new Promise((resolve) => setTimeout(resolve, 15));
+  }
 }
 
 async function fetchFromOpenRouter(messages: ChatMessage[], modelOverride?: string) {
@@ -26,7 +39,6 @@ async function fetchFromOpenRouter(messages: ChatMessage[], modelOverride?: stri
 
   if (!apiKey) {
     console.warn("OPENROUTER_API_KEY is not defined. Returning a mocked response.");
-    // Mock response for development
     return {
       choices: [
         {
@@ -71,7 +83,6 @@ async function fetchFromOpenRouter(messages: ChatMessage[], modelOverride?: stri
  * Reusable general chat with AI
  */
 export async function chatWithAI(messages: ChatMessage[], model?: string, language: "te" | "en" = "te") {
-  // Ensure the system prompt is injected at the beginning if not present
   const hasSystemPrompt = messages.some((m) => m.role === "system");
   const fullMessages = hasSystemPrompt
     ? messages
@@ -79,6 +90,90 @@ export async function chatWithAI(messages: ChatMessage[], model?: string, langua
 
   const data = await fetchFromOpenRouter(fullMessages, model);
   return data.choices[0].message.content;
+}
+
+/**
+ * Stream chat with AI from OpenRouter natively
+ */
+export async function* chatWithAIStream(
+  messages: ChatMessage[],
+  modelOverride?: string,
+  language: "te" | "en" = "te"
+): AsyncGenerator<string, void, unknown> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const model = modelOverride || process.env.OPENROUTER_MODEL || "google/gemma-4-26b-a4b-it:free";
+
+  const hasSystemPrompt = messages.some((m) => m.role === "system");
+  const fullMessages = hasSystemPrompt
+    ? messages
+    : [{ role: "system" as const, content: getSystemPrompt(language) }, ...messages];
+
+  if (!apiKey) {
+    console.warn("OPENROUTER_API_KEY is not defined. Returning a mocked streaming response.");
+    const mockMsg = language === "en"
+      ? "Sorry, OpenRouter API Key is not defined. Please configure it in your .env.local file. (Mock Stream)"
+      : "క్షమించండి, OpenRouter API Key అమర్చబడలేదు. దయచేసి .env.local ఫైల్ లో కీని కాన్ఫిగర్ చేయండి. (Mock Stream)";
+    for (const char of mockMsg) {
+      yield char;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    return;
+  }
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "http://localhost:3000",
+      "X-Title": "Saarathi AI",
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: fullMessages,
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error("Response body is not readable");
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (trimmed === "data: [DONE]") continue;
+
+      if (trimmed.startsWith("data: ")) {
+        try {
+          const parsed = JSON.parse(trimmed.slice(6));
+          const chunkText = parsed.choices?.[0]?.delta?.content || "";
+          if (chunkText) {
+            yield chunkText;
+          }
+        } catch (e) {
+          // Ignored
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -180,14 +275,13 @@ export async function explainImage(imageBase64: string, mimeType: string, prompt
     ? "Please explain what is in this image in simple English. Analyze documents, bills, crop health, or medicine labels."
     : "దయచేసి ఈ చిత్రంలో ఏముందో వివరించండి (Explain what is in this image in simple Telugu). Analyze documents, bills, crop health, or medicine labels.";
 
-  // Format standard multi-modal content according to OpenRouter requirements
   const userContent = [
     {
-      type: "text",
+      type: "text" as const,
       text: prompt || defaultPrompt,
     },
     {
-      type: "image_url",
+      type: "image_url" as const,
       image_url: {
         url: `data:${mimeType};base64,${imageBase64}`,
       },
@@ -204,7 +298,6 @@ export async function explainImage(imageBase64: string, mimeType: string, prompt
     return data.choices[0].message.content;
   } catch (error) {
     console.error("Error during image analysis: ", error);
-    // If the model does not support vision or image analysis fails, return a graceful response
     return language === "en"
       ? `Sorry, the selected model could not analyze this image. Please check if your model supports Vision. (${error instanceof Error ? error.message : String(error)})`
       : `క్షమించండి, ఎంచుకున్న మోడల్ ఈ చిత్రాన్ని విశ్లేషించలేకపోయింది. దయచేసి మీ మోడల్ కంటి చూపును (Vision) సపోర్ట్ చేస్తుందో లేదో సరిచూసుకోండి. (${error instanceof Error ? error.message : String(error)})`;

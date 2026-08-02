@@ -15,6 +15,11 @@ export interface AccessibilitySettings {
   theme: ThemeMode;
   speechRate: number;
   speechPitch: number;
+  district: string;
+  state: "Telangana" | "Andhra Pradesh";
+  occupation: string;
+  landOwnedAcres: number;
+  onboardingDone: boolean;
 }
 
 interface AccessibilityContextProps {
@@ -32,6 +37,11 @@ const defaultSettings: AccessibilitySettings = {
   theme: "dark",
   speechRate: 1,
   speechPitch: 1,
+  district: "Warangal",
+  state: "Telangana",
+  occupation: "",
+  landOwnedAcres: 0,
+  onboardingDone: false,
 };
 
 const AccessibilityContext = createContext<AccessibilityContextProps | undefined>(undefined);

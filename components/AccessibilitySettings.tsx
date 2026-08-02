@@ -220,6 +220,70 @@ export default function AccessibilitySettingsComponent() {
             className="w-full"
           />
         </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-300">
+            {lang === "en" ? "State" : "రాష్ట్రం"}
+          </label>
+          <select
+            value={settings.state}
+            onChange={(event) =>
+              updateSetting(
+                "state",
+                event.target.value === "Andhra Pradesh" ? "Andhra Pradesh" : "Telangana"
+              )
+            }
+            className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-200"
+          >
+            <option value="Telangana">Telangana</option>
+            <option value="Andhra Pradesh">Andhra Pradesh</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-300">
+            {lang === "en" ? "District" : "జిల్లా"}
+          </label>
+          <input
+            value={settings.district}
+            onChange={(event) => updateSetting("district", event.target.value)}
+            placeholder={lang === "en" ? "Enter district name" : "జిల్లా పేరు నమోదు చేయండి"}
+            className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-200"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-300">
+            {lang === "en" ? "Occupation" : "వృత్తి"}
+          </label>
+          <input
+            value={settings.occupation}
+            onChange={(event) => updateSetting("occupation", event.target.value)}
+            placeholder={lang === "en" ? "Farmer / Worker / Student..." : "రైతు / కూలీ / విద్యార్థి..."}
+            className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-200"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-300">
+            {lang === "en" ? "Land Owned (acres)" : "భూమి (ఎకరాలు)"}
+          </label>
+          <input
+            type="number"
+            min={0}
+            step={0.1}
+            value={settings.landOwnedAcres}
+            onChange={(event) => updateSetting("landOwnedAcres", Number(event.target.value))}
+            className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-200"
+          />
+        </div>
+
+        <button
+          onClick={() => updateSetting("onboardingDone", true)}
+          className="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
+        >
+          {lang === "en" ? "Save Rural Profile" : "గ్రామీణ ప్రొఫైల్ సేవ్ చేయండి"}
+        </button>
       </div>
     </div>
   );

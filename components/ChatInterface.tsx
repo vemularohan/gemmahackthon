@@ -12,9 +12,7 @@ import {
   Volume2,
   VolumeX,
   RefreshCw,
-  CornerDownLeft,
   X,
-  User,
   Sparkles,
 } from "lucide-react";
 import { announceToScreenReader } from "@/utils/accessibility";
@@ -174,7 +172,7 @@ export default function ChatInterface({
   }, [initialMessages]);
 
   // Setup STT in input bar
-  const { isListening, transcript, startListening, stopListening } = useSpeech({
+  const { isListening, startListening, stopListening } = useSpeech({
     onResult: (text) => {
       if (text) {
         setInputValue(text);
@@ -212,6 +210,7 @@ export default function ChatInterface({
 
     try {
       let responseText = "";
+      let assistantId = Math.random().toString(36).substring(7);
       if (userImage && userImageMime) {
         // Image action
         const base64Clean = userImage.split(",")[1];
@@ -229,12 +228,13 @@ export default function ChatInterface({
         const data = await res.json();
         responseText = data.result || data.error;
       } else {
-        // Normal chat action
-        // Format messages for OpenRouter format
+        // Normal chat action with streaming response
         const chatHistory = updatedMessages.map((m) => ({
           role: m.role === "user" ? ("user" as const) : ("assistant" as const),
           content: m.content,
         }));
+
+        setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }]);
 
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -243,19 +243,71 @@ export default function ChatInterface({
             action: "chat",
             messages: chatHistory,
             language: lang,
+            stream: true,
+            conversationId: chatId,
+            profile: {
+              district: settings.district,
+              state: settings.state,
+              occupation: settings.occupation,
+              landOwnedAcres: settings.landOwnedAcres,
+            },
           }),
         });
-        const data = await res.json();
-        responseText = data.result || data.error;
+
+        if (!res.ok || !res.body) {
+          const fallback = await res.json();
+          responseText = fallback.error || "Server error";
+        } else {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let streamBuffer = "";
+          let doneStreaming = false;
+
+          while (!doneStreaming) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            streamBuffer += decoder.decode(value, { stream: true });
+            const events = streamBuffer.split("\n\n");
+            streamBuffer = events.pop() || "";
+
+            for (const eventText of events) {
+              if (!eventText.startsWith("data: ")) continue;
+              const payload = eventText.replace("data: ", "");
+              const parsed = JSON.parse(payload) as {
+                chunk?: string;
+                done?: boolean;
+                error?: string;
+              };
+              if (parsed.error) {
+                throw new Error(parsed.error);
+              }
+              if (parsed.chunk) {
+                responseText += parsed.chunk;
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantId ? { ...msg, content: responseText } : msg
+                  )
+                );
+              }
+              if (parsed.done) {
+                doneStreaming = true;
+              }
+            }
+          }
+        }
       }
 
-      const assistantMsg: Message = {
-        id: Math.random().toString(36).substring(7),
-        role: "assistant",
-        content: responseText,
-      };
-
-      const finalMessages = [...updatedMessages, assistantMsg];
+      if (userImage) {
+        assistantId = Math.random().toString(36).substring(7);
+      }
+      const finalMessages: Message[] = [
+        ...updatedMessages,
+        {
+          id: assistantId,
+          role: "assistant",
+          content: responseText,
+        },
+      ];
       setMessages(finalMessages);
       onSaveChat(finalMessages);
       announceToScreenReader(t("srResponseReceived", lang));
@@ -263,7 +315,7 @@ export default function ChatInterface({
       // Auto speak response if turned on
       if (settings.autoSpeak) {
         speak(responseText, lang);
-        setActiveSpeechId(assistantMsg.id);
+        setActiveSpeechId(assistantId);
       }
     } catch (err: any) {
       console.warn("Chat interface send failed:", err?.message || err);
@@ -313,6 +365,13 @@ export default function ChatInterface({
           action: "chat",
           messages: chatHistory,
           language: lang,
+          conversationId: chatId,
+          profile: {
+            district: settings.district,
+            state: settings.state,
+            occupation: settings.occupation,
+            landOwnedAcres: settings.landOwnedAcres,
+          },
         }),
       });
 

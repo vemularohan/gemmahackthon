@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { chatWithAI, explainImage, summarize, translateText } from "@/lib/openrouter";
+import { explainImage, summarize, translateText } from "@/lib/openrouter";
 import {
   runGovernmentEligibilityAssistant,
-  runGroundedAssistant,
   runHealthAssistant,
   runPlantDiseaseAssistant,
 } from "@/services/assistantService";
-import { AppLanguage, GovernmentEligibilityInput, KnowledgeDomain } from "@/types/assistant";
+import { runGemmaOrchestration, runGemmaOrchestrationStream, parseStructuredAssistantJson, formatStructuredAnswer } from "@/services/gemmaOrchestrator";
+import { AppLanguage, GovernmentEligibilityInput } from "@/types/assistant";
 
 const parseLanguage = (value: unknown): AppLanguage => (value === "en" ? "en" : "te");
 
@@ -24,14 +24,91 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "chat": {
-        const { messages, model } = body as {
+        const { messages, stream, conversationId, profile } = body as {
           messages?: Array<{ role: "system" | "user" | "assistant"; content: string }>;
-          model?: string;
+          stream?: boolean;
+          conversationId?: string;
+          profile?: {
+            district?: string;
+            state?: "Telangana" | "Andhra Pradesh";
+            occupation?: string;
+            age?: number;
+            landOwnedAcres?: number;
+          };
         };
         if (!messages || !Array.isArray(messages)) {
           return NextResponse.json({ error: "Invalid messages parameter" }, { status: 400 });
         }
-        result = await chatWithAI(messages, model, language);
+        const query = messages[messages.length - 1]?.content ?? "";
+
+        if (stream) {
+          const encoder = new TextEncoder();
+          const responseStream = new ReadableStream({
+            async start(controller) {
+              try {
+                const streamGenerator = runGemmaOrchestrationStream({
+                  conversationId: conversationId || "default-conversation",
+                  language,
+                  query,
+                  history: messages
+                    .filter((message) => message.role !== "system")
+                    .map((message) => ({ role: message.role === "assistant" ? "assistant" : "user", content: message.content })),
+                  profile,
+                });
+
+                let lastMetadata: any = null;
+                let rawText = "";
+
+                for await (const data of streamGenerator) {
+                  if (data.metadata) {
+                    lastMetadata = data.metadata;
+                  }
+                  if (data.chunk) {
+                    rawText += data.chunk;
+                    // If it is a domain prompt that returns structured JSON, do not stream the raw braces directly to the user if we want clean text.
+                    // However, we can stream the text as it is. Let's stream the chunk.
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: data.chunk })}\n\n`));
+                  }
+                }
+
+                // If the intent classifications returned RAG JSON, the user received raw JSON during streaming.
+                // Let's send the final formatted message and tell the client we are done.
+                if (lastMetadata?.intent && lastMetadata.intent !== "weather" && lastMetadata.intent !== "scheme_eligibility" && lastMetadata.intent !== "healthcare") {
+                  const structured = parseStructuredAssistantJson(rawText, language);
+                  const formatted = formatStructuredAnswer(structured, language);
+                  // We can yield the final formatted content to replace or append cleanly
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, chunk: "", result: formatted, intent: lastMetadata.intent, confidence: lastMetadata.confidence })}\n\n`));
+                } else {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, intent: lastMetadata?.intent || "general", confidence: lastMetadata?.confidence || 0.8 })}\n\n`));
+                }
+
+                controller.close();
+              } catch (error) {
+                const message = error instanceof Error ? error.message : "Streaming failed";
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: message })}\n\n`));
+                controller.close();
+              }
+            },
+          });
+
+          return new Response(responseStream, {
+            headers: {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache, no-transform",
+              Connection: "keep-alive",
+            },
+          });
+        }
+
+        result = (await runGemmaOrchestration({
+          conversationId: conversationId || "default-conversation",
+          language,
+          query,
+          history: messages
+            .filter((message) => message.role !== "system")
+            .map((message) => ({ role: message.role === "assistant" ? "assistant" : "user", content: message.content })),
+          profile,
+        })).response;
         break;
       }
       case "translate": {
@@ -49,15 +126,17 @@ export async function POST(request: NextRequest) {
         if (!query) {
           return NextResponse.json({ error: "Missing query parameter" }, { status: 400 });
         }
-        const domainMap: Record<"government" | "health" | "agriculture", KnowledgeDomain> = {
-          government: "government",
-          health: "healthcare",
-          agriculture: "agriculture",
-        };
         result =
           action === "health"
             ? await runHealthAssistant(query, language)
-            : await runGroundedAssistant(query, domainMap[action], language);
+            : (
+                await runGemmaOrchestration({
+                  conversationId: "single-turn",
+                  language,
+                  query,
+                  history: [{ role: "user", content: query }],
+                })
+              ).response;
         break;
       }
       case "government-eligibility": {
